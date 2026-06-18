@@ -1,0 +1,10 @@
+node_modules/
+.env
+logs/
+uploads/complaints/*
+uploads/completions/*
+uploads/profiles/*
+!uploads/complaints/.gitkeep
+!uploads/completions/.gitkeep
+!uploads/profiles/.gitkeep
+*.log

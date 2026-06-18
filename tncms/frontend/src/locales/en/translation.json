@@ -1,0 +1,120 @@
+{
+  "nav": {
+    "home": "Home",
+    "complaints": "Complaints",
+    "track": "Track",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "notifications": "Notifications",
+    "settings": "Settings"
+  },
+  "hero": {
+    "headline": "Your Grievances, Our Responsibility",
+    "subheadline": "Tamil Nadu Government's Modern Complaint Management System",
+    "submitBtn": "Submit Complaint",
+    "trackBtn": "Track Complaint",
+    "stats": {
+      "complaints": "Total Complaints",
+      "resolved": "Resolved",
+      "wards": "Wards",
+      "officers": "Officers"
+    }
+  },
+  "form": {
+    "name": "Full Name",
+    "phone": "Phone Number",
+    "voterId": "Voter ID",
+    "ward": "Ward Number",
+    "category": "Category",
+    "title": "Complaint Title",
+    "description": "Description",
+    "location": "Location",
+    "photo": "Upload Photo",
+    "priority": "Priority",
+    "submit": "Submit Complaint",
+    "namePlaceholder": "Enter your full name",
+    "phonePlaceholder": "Enter phone number",
+    "descriptionPlaceholder": "Describe your complaint in detail"
+  },
+  "categories": {
+    "road": "Road",
+    "water": "Water Supply",
+    "electricity": "Electricity",
+    "sanitation": "Sanitation",
+    "drainage": "Drainage",
+    "streetlight": "Street Light",
+    "garbage": "Garbage",
+    "park": "Park",
+    "other": "Other"
+  },
+  "priority": {
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High",
+    "urgent": "Urgent"
+  },
+  "status": {
+    "submitted": "Submitted",
+    "accepted": "Accepted",
+    "processing": "Processing",
+    "completed": "Completed",
+    "rejected": "Rejected"
+  },
+  "track": {
+    "title": "Track Your Complaint",
+    "searchPlaceholder": "Enter Complaint ID or Citizen ID",
+    "search": "Search",
+    "complaintId": "Complaint ID",
+    "citizenId": "Citizen ID",
+    "officer": "Assigned Officer",
+    "ward": "Ward Number",
+    "submitted": "Submitted Date",
+    "expected": "Expected Completion",
+    "timeline": "Status Timeline"
+  },
+  "dashboard": {
+    "total": "Total Complaints",
+    "accepted": "Accepted",
+    "processing": "Processing",
+    "completed": "Completed",
+    "recent": "Recent Complaints",
+    "newComplaint": "New Complaint"
+  },
+  "auth": {
+    "loginTitle": "Login",
+    "registerTitle": "Create Account",
+    "phonePlaceholder": "Phone Number",
+    "passwordPlaceholder": "Password",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "forgotPassword": "Forgot Password?"
+  },
+  "success": {
+    "submitted": "Complaint submitted successfully!",
+    "citizenId": "Your Citizen ID",
+    "complaintId": "Complaint ID",
+    "saveNote": "Please save these IDs for tracking"
+  },
+  "feed": {
+    "title": "Resolved Complaints",
+    "subtitle": "Recently resolved complaints across Tamil Nadu"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "noData": "No data found",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "search": "Search",
+    "filter": "Filter",
+    "download": "Download",
+    "upload": "Upload",
+    "actions": "Actions"
+  }
+}

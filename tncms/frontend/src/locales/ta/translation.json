@@ -1,0 +1,120 @@
+{
+  "nav": {
+    "home": "முகப்பு",
+    "complaints": "புகார்கள்",
+    "track": "நிலை அறிய",
+    "login": "உள்நுழைய",
+    "register": "பதிவு செய்",
+    "logout": "வெளியேறு",
+    "dashboard": "டாஷ்போர்டு",
+    "profile": "சுயவிவரம்",
+    "notifications": "அறிவிப்புகள்",
+    "settings": "அமைப்புகள்"
+  },
+  "hero": {
+    "headline": "உங்கள் குறைகள் எங்கள் பொறுப்பு",
+    "subheadline": "தமிழ்நாடு அரசின் நவீன புகார் மேலாண்மை அமைப்பு",
+    "submitBtn": "புகார் பதிவு செய்",
+    "trackBtn": "புகார் நிலை அறிய",
+    "stats": {
+      "complaints": "மொத்த புகார்கள்",
+      "resolved": "தீர்க்கப்பட்டவை",
+      "wards": "வார்டுகள்",
+      "officers": "அலுவலர்கள்"
+    }
+  },
+  "form": {
+    "name": "பெயர்",
+    "phone": "தொலைபேசி எண்",
+    "voterId": "வாக்காளர் அட்டை எண்",
+    "ward": "வார்டு எண்",
+    "category": "புகார் வகை",
+    "title": "புகார் தலைப்பு",
+    "description": "புகார் விவரம்",
+    "location": "இடம்",
+    "photo": "புகைப்படம்",
+    "priority": "முன்னுரிமை",
+    "submit": "சமர்ப்பிக்கவும்",
+    "namePlaceholder": "உங்கள் பெயர் உள்ளிடவும்",
+    "phonePlaceholder": "தொலைபேசி எண் உள்ளிடவும்",
+    "descriptionPlaceholder": "புகாரின் முழு விவரத்தை தெளிவாக எழுதவும்"
+  },
+  "categories": {
+    "road": "சாலை",
+    "water": "குடிநீர்",
+    "electricity": "மின்சாரம்",
+    "sanitation": "சுகாதாரம்",
+    "drainage": "வடிகால்",
+    "streetlight": "தெரு விளக்கு",
+    "garbage": "குப்பை",
+    "park": "பூங்கா",
+    "other": "மற்றவை"
+  },
+  "priority": {
+    "low": "குறைந்த",
+    "medium": "நடுத்தர",
+    "high": "அதிக",
+    "urgent": "அவசரம்"
+  },
+  "status": {
+    "submitted": "சமர்ப்பிக்கப்பட்டது",
+    "accepted": "ஏற்றுக்கொள்ளப்பட்டது",
+    "processing": "செயலில் உள்ளது",
+    "completed": "நிறைவடைந்தது",
+    "rejected": "நிராகரிக்கப்பட்டது"
+  },
+  "track": {
+    "title": "புகார் நிலை அறிய",
+    "searchPlaceholder": "புகார் ID அல்லது குடிமகன் ID உள்ளிடவும்",
+    "search": "தேட",
+    "complaintId": "புகார் எண்",
+    "citizenId": "குடிமகன் எண்",
+    "officer": "அலுவலர்",
+    "ward": "வார்டு",
+    "submitted": "சமர்ப்பித்த நாள்",
+    "expected": "எதிர்பார்க்கப்படும் தேதி",
+    "timeline": "நிலை வரலாறு"
+  },
+  "dashboard": {
+    "total": "மொத்த புகார்கள்",
+    "accepted": "ஏற்கப்பட்டவை",
+    "processing": "செயலில் உள்ளவை",
+    "completed": "நிறைவடைந்தவை",
+    "recent": "சமீபத்திய புகார்கள்",
+    "newComplaint": "புதிய புகார்"
+  },
+  "auth": {
+    "loginTitle": "உள்நுழைய",
+    "registerTitle": "பதிவு செய்யுங்கள்",
+    "phonePlaceholder": "தொலைபேசி எண்",
+    "passwordPlaceholder": "கடவுச்சொல்",
+    "noAccount": "கணக்கு இல்லையா?",
+    "hasAccount": "ஏற்கனவே கணக்கு உள்ளதா?",
+    "forgotPassword": "கடவுச்சொல் மறந்துவிட்டதா?"
+  },
+  "success": {
+    "submitted": "புகார் வெற்றிகரமாக சமர்ப்பிக்கப்பட்டது!",
+    "citizenId": "உங்கள் குடிமகன் எண்",
+    "complaintId": "புகார் எண்",
+    "saveNote": "இந்த எண்களை சேமித்து வையுங்கள்"
+  },
+  "feed": {
+    "title": "தீர்க்கப்பட்ட புகார்கள்",
+    "subtitle": "சமீபத்தில் தீர்க்கப்பட்ட புகார்கள்"
+  },
+  "common": {
+    "loading": "ஏற்றுகிறது...",
+    "error": "பிழை ஏற்பட்டது",
+    "noData": "தரவு இல்லை",
+    "save": "சேமி",
+    "cancel": "ரத்து செய்",
+    "delete": "நீக்கு",
+    "edit": "திருத்து",
+    "view": "பார்",
+    "search": "தேட",
+    "filter": "வடிகட்டு",
+    "download": "பதிவிறக்கம்",
+    "upload": "பதிவேற்றம்",
+    "actions": "செயல்கள்"
+  }
+}
