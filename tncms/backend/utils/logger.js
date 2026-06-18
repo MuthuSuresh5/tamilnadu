@@ -1,23 +1,34 @@
 const winston = require('winston');
 const path = require('path');
+const fs = require('fs');
+
+const isProduction = process.env.NODE_ENV === 'production';
+
+const transports = [
+  new winston.transports.Console({
+    format: winston.format.combine(
+      winston.format.colorize(),
+      winston.format.simple()
+    ),
+  }),
+];
+
+// Only add file transports in non-production (Vercel has read-only filesystem)
+if (!isProduction) {
+  const logsDir = path.join(__dirname, '../logs');
+  if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true });
+  transports.push(new winston.transports.File({ filename: path.join(logsDir, 'error.log'), level: 'error' }));
+  transports.push(new winston.transports.File({ filename: path.join(logsDir, 'combined.log') }));
+}
 
 const logger = winston.createLogger({
-  level: process.env.NODE_ENV === 'production' ? 'warn' : 'debug',
+  level: isProduction ? 'warn' : 'debug',
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.errors({ stack: true }),
     winston.format.json()
   ),
-  transports: [
-    new winston.transports.Console({
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.simple()
-      ),
-    }),
-    new winston.transports.File({ filename: path.join(__dirname, '../logs/error.log'), level: 'error' }),
-    new winston.transports.File({ filename: path.join(__dirname, '../logs/combined.log') }),
-  ],
+  transports,
 });
 
 module.exports = logger;

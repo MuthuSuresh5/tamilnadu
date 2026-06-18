@@ -1,8 +1,6 @@
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -13,12 +11,6 @@ cloudinary.config({
 const isCloudinaryConfigured =
   process.env.CLOUDINARY_CLOUD_NAME &&
   !process.env.CLOUDINARY_CLOUD_NAME.includes('<');
-
-const ensureDir = (folder) => {
-  const dir = path.join(__dirname, '../uploads', folder);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  return dir;
-};
 
 const createStorage = (folder) => {
   if (isCloudinaryConfigured) {
@@ -31,7 +23,11 @@ const createStorage = (folder) => {
       },
     });
   }
-  const dir = ensureDir(folder);
+  // Local disk storage — only works in development
+  const path = require('path');
+  const fs = require('fs');
+  const dir = path.join(__dirname, '../uploads', folder);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   return multer.diskStorage({
     destination: (req, file, cb) => cb(null, dir),
     filename: (req, file, cb) => {
@@ -49,12 +45,8 @@ const resolveFilePath = (folder, file) => {
 const wrapMulter = (upload, folder) => (req, res, next) => {
   upload(req, res, (err) => {
     if (err) return res.status(400).json({ success: false, message: err.message });
-    if (req.files?.length) {
-      req.files.forEach(f => { f.resolvedPath = resolveFilePath(folder, f); });
-    }
-    if (req.file) {
-      req.file.resolvedPath = resolveFilePath(folder, req.file);
-    }
+    if (req.files?.length) req.files.forEach(f => { f.resolvedPath = resolveFilePath(folder, f); });
+    if (req.file) req.file.resolvedPath = resolveFilePath(folder, req.file);
     next();
   });
 };
