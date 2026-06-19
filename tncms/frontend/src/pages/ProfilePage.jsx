@@ -28,10 +28,22 @@ export default function ProfilePage() {
       const fd = new FormData()
       Object.entries(data).forEach(([k, v]) => v && fd.append(k, v))
       if (photoFile) fd.append('photo', photoFile)
+      
       const res = await authService.updateProfile(fd)
       dispatch(setUser(res.data.data))
-      alert('Profile updated!')
-    } catch (e) { alert(e.response?.data?.message || 'Update failed') }
+      setPhotoFile(null)
+      setPreview(null)
+      alert('✅ Profile updated successfully!')
+    } catch (e) { 
+      console.error('Profile update error:', e)
+      const errorMsg = e.response?.data?.message || e.message || 'Update failed'
+      alert('❌ ' + errorMsg)
+      
+      // If Cloudinary error, suggest updating without photo
+      if (errorMsg.includes('Cloudinary') || errorMsg.includes('upload')) {
+        alert('💡 Tip: Try updating your profile without changing the photo, or ask admin to configure Cloudinary.')
+      }
+    }
     setSaving(false)
   }
 
@@ -117,10 +129,18 @@ export default function ProfilePage() {
               <p className="text-sm font-semibold text-gray-700">{user?.voterId || '—'}</p>
             </div>
           </div>
-          <button type="submit" disabled={saving}
-            className="flex items-center justify-center gap-2 w-full py-3 bg-[#D32F2F] text-white font-bold rounded-xl hover:bg-red-700 transition-all disabled:opacity-60">
-            <Save size={16} /> {saving ? 'Saving...' : 'Save Profile'}
-          </button>
+          <div className="flex gap-3">
+            <button type="submit" disabled={saving}
+              className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#D32F2F] text-white font-bold rounded-xl hover:bg-red-700 transition-all disabled:opacity-60">
+              <Save size={16} /> {saving ? 'Saving...' : 'Save Profile'}
+            </button>
+            {photoFile && (
+              <button type="button" onClick={() => { setPhotoFile(null); setPreview(null) }}
+                className="px-4 py-3 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition-all">
+                Remove Photo
+              </button>
+            )}
+          </div>
         </motion.form>
       ) : (
         <motion.form initial={{ opacity: 0 }} animate={{ opacity: 1 }} onSubmit={handlePw(onChangePw)}
