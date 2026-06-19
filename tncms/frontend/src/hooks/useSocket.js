@@ -4,13 +4,15 @@ import { useDispatch } from 'react-redux'
 import { addNotification } from '../store/slices/notificationSlice'
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || (import.meta.env.DEV ? '' : 'http://localhost:5000')
+const ENABLE_SOCKET = import.meta.env.VITE_ENABLE_SOCKET === 'true' // Disabled by default for Vercel
 
 export const useSocket = (user) => {
   const socketRef = useRef(null)
   const dispatch = useDispatch()
 
   useEffect(() => {
-    if (!user) return
+    // Socket.io disabled for Vercel serverless deployment
+    if (!ENABLE_SOCKET || !user) return
 
     try {
       socketRef.current = io(SOCKET_URL, {
