@@ -85,8 +85,7 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 5000;
 const httpServer = server.listen(PORT, () => logger.info(`Server running on port ${PORT} [${process.env.NODE_ENV}]`));
 
-// Handle unhandled promise rejections
+// Handle unhandled promise rejections (log only — don't exit on Vercel)
 process.on('unhandledRejection', (err) => {
   logger.error(`Unhandled Rejection: ${err.message}`);
-  httpServer.close(() => process.exit(1));
 });
