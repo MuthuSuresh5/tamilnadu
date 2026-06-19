@@ -102,11 +102,16 @@ exports.submitComplaint = async (req, res) => {
       });
     }
 
-    // Emit socket event
-    const io = req.app.get('io');
-    if (io) {
-      io.to(`ward_${wardNumber}`).emit('new_complaint', { complaintId, wardNumber, category, priority: aiPriority });
-      io.to('admin').emit('new_complaint', { complaintId, wardNumber, category });
+    // Emit socket event (optional - only if Socket.io is available)
+    try {
+      const io = req.app.get('io');
+      if (io) {
+        io.to(`ward_${wardNumber}`).emit('new_complaint', { complaintId, wardNumber, category, priority: aiPriority });
+        io.to('admin').emit('new_complaint', { complaintId, wardNumber, category });
+      }
+    } catch (err) {
+      // Socket.io not available (e.g., serverless deployment)
+      logger.debug('Socket.io not available');
     }
 
     res.status(201).json({
@@ -233,9 +238,15 @@ exports.updateComplaintStatus = async (req, res) => {
       });
     }
 
-    const io = req.app.get('io');
-    if (io && citizen) {
-      io.to(citizen._id.toString()).emit('status_update', { complaintId: complaint.complaintId, status });
+    // Emit socket event (optional - only if Socket.io is available)
+    try {
+      const io = req.app.get('io');
+      if (io && citizen) {
+        io.to(citizen._id.toString()).emit('status_update', { complaintId: complaint.complaintId, status });
+      }
+    } catch (err) {
+      // Socket.io not available (e.g., serverless deployment)
+      logger.debug('Socket.io not available');
     }
 
     res.json({ success: true, data: complaint });
