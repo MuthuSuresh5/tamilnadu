@@ -88,11 +88,20 @@ exports.updateProfile = async (req, res) => {
     const { name, email, address, designation } = req.body;
     const update = { name, email, address };
     if (req.user.role === 'admin' && designation !== undefined) update.designation = designation;
-    if (req.file) update.profilePhoto = req.file.resolvedPath;
+    
+    if (req.file) {
+      update.profilePhoto = req.file.resolvedPath;
+      logger.info(`Profile photo uploaded: ${req.file.resolvedPath}`);
+    }
+    
     const user = await User.findByIdAndUpdate(req.user._id, update, { new: true, runValidators: true });
-    res.json({ success: true, data: user });
+    res.json({ success: true, data: user, message: 'Profile updated successfully' });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    logger.error(`Profile update error: ${error.message}`);
+    res.status(500).json({ 
+      success: false, 
+      message: error.message || 'Failed to update profile. Check if Cloudinary is configured.' 
+    });
   }
 };
 

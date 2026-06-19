@@ -1,16 +1,25 @@
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
-
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+const logger = require('../utils/logger');
 
 const isCloudinaryConfigured =
   process.env.CLOUDINARY_CLOUD_NAME &&
-  !process.env.CLOUDINARY_CLOUD_NAME.includes('<');
+  process.env.CLOUDINARY_API_KEY &&
+  process.env.CLOUDINARY_API_SECRET &&
+  !process.env.CLOUDINARY_CLOUD_NAME.includes('<') &&
+  !process.env.CLOUDINARY_API_KEY.includes('<');
+
+if (isCloudinaryConfigured) {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  });
+  logger.info('Cloudinary configured successfully');
+} else {
+  logger.warn('Cloudinary not configured - using local storage (not recommended for production)');
+}
 
 const createStorage = (folder) => {
   if (isCloudinaryConfigured) {
@@ -44,7 +53,16 @@ const resolveFilePath = (folder, file) => {
 
 const wrapMulter = (upload, folder) => (req, res, next) => {
   upload(req, res, (err) => {
-    if (err) return res.status(400).json({ success: false, message: err.message });
+    if (err) {
+      logger.error(`Upload error: ${err.message}`);
+      if (err.message?.includes('Invalid Signature') || err.message?.includes('Cloudinary')) {
+        return res.status(500).json({ 
+          success: false, 
+          message: 'Image upload failed. Cloudinary is not configured properly. Please contact administrator.' 
+        });
+      }
+      return res.status(400).json({ success: false, message: err.message });
+    }
     if (req.files?.length) req.files.forEach(f => { f.resolvedPath = resolveFilePath(folder, f); });
     if (req.file) req.file.resolvedPath = resolveFilePath(folder, req.file);
     next();
