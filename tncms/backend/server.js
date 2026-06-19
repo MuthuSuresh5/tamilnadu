@@ -106,11 +106,23 @@ app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/reports', require('./routes/reports'));
 
-app.get('/api/health', (req, res) => res.json({ 
-  status: 'OK', 
-  timestamp: new Date(), 
-  env: process.env.NODE_ENV 
-}));
+app.get('/api/health', (req, res) => {
+  const isCloudinaryConfigured = 
+    process.env.CLOUDINARY_CLOUD_NAME &&
+    process.env.CLOUDINARY_API_KEY &&
+    process.env.CLOUDINARY_API_SECRET &&
+    !process.env.CLOUDINARY_CLOUD_NAME.includes('<');
+    
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date(), 
+    env: process.env.NODE_ENV,
+    features: {
+      cloudinary: isCloudinaryConfigured,
+      database: require('mongoose').connection.readyState === 1
+    }
+  });
+});
 
 // 404 handler for unknown routes
 app.use((req, res) => {

@@ -85,22 +85,46 @@ exports.getMe = async (req, res) => {
 
 exports.updateProfile = async (req, res) => {
   try {
+    logger.info(`Profile update request from user ${req.user._id}`);
+    
     const { name, email, address, designation } = req.body;
-    const update = { name, email, address };
-    if (req.user.role === 'admin' && designation !== undefined) update.designation = designation;
+    const update = {};
+    
+    if (name) update.name = name;
+    if (email !== undefined) update.email = email;
+    if (address !== undefined) update.address = address;
+    
+    if (req.user.role === 'admin' && designation !== undefined) {
+      update.designation = designation;
+    }
     
     if (req.file) {
       update.profilePhoto = req.file.resolvedPath;
       logger.info(`Profile photo uploaded: ${req.file.resolvedPath}`);
     }
     
-    const user = await User.findByIdAndUpdate(req.user._id, update, { new: true, runValidators: true });
+    logger.info(`Updating profile with: ${JSON.stringify(update)}`);
+    
+    const user = await User.findByIdAndUpdate(
+      req.user._id, 
+      update, 
+      { new: true, runValidators: true }
+    );
+    
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    
+    logger.info(`Profile updated successfully for user ${req.user._id}`);
     res.json({ success: true, data: user, message: 'Profile updated successfully' });
   } catch (error) {
-    logger.error(`Profile update error: ${error.message}`);
+    logger.error(`Profile update error for user ${req.user?._id}: ${error.message}`);
+    logger.error(error.stack);
     res.status(500).json({ 
       success: false, 
-      message: error.message || 'Failed to update profile. Check if Cloudinary is configured.' 
+      message: process.env.NODE_ENV === 'production' 
+        ? 'Failed to update profile. Please try again.' 
+        : error.message
     });
   }
 };
