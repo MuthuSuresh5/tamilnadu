@@ -1,10 +1,10 @@
-const logger = require('../utils/logger');
-
 const errorHandler = (err, req, res, next) => {
   let statusCode = err.statusCode || 500;
   let message = err.message || 'Internal Server Error';
 
-  logger.error(`[${req.method}] ${req.originalUrl} - ${statusCode} - ${message} - IP:${req.ip}`);
+  logger.error(`[${req.method}] ${req.originalUrl} - ${statusCode} - ${message}`);
+  logger.error(`Error stack: ${err.stack}`);
+  logger.error(`Error object: ${JSON.stringify(err, Object.getOwnPropertyNames(err))}`);
 
   // Mongoose bad ObjectId
   if (err.name === 'CastError') {

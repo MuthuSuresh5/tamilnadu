@@ -153,7 +153,8 @@ if (process.env.VERCEL !== '1') {
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
-  logger.error(`Unhandled Rejection: ${err.message}`);
+  logger.error(`Unhandled Rejection: ${err.message || JSON.stringify(err)}`);
+  logger.error(err.stack || err);
 });
 
 // Export for Vercel serverless
