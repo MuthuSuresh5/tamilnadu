@@ -6,6 +6,7 @@ yarn-debug.log*
 yarn-error.log*
 uploads/
 logs/
+*.log
 test-upload.js
 seed.js
 Dockerfile
@@ -13,3 +14,4 @@ docker-compose.yml
 .git
 .gitignore
 README.md
+.DS_Store
