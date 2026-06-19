@@ -13,6 +13,7 @@ export default function Navbar({ onMenuToggle }) {
   const { user } = useSelector(s => s.auth)
   const { unreadCount } = useSelector(s => s.notifications)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const toggleLang = () => {
     const lang = i18n.language === 'ta' ? 'en' : 'ta'
@@ -109,18 +110,74 @@ export default function Navbar({ onMenuToggle }) {
               </div>
             </>
           ) : (
-            <div className="hidden md:flex items-center gap-2">
-              <Link to="/login" className="px-4 py-1.5 text-sm font-medium text-[#D32F2F] border border-[#D32F2F] rounded-lg hover:bg-red-50 transition-colors">{t('nav.login')}</Link>
-              <Link to="/register" className="px-4 py-1.5 text-sm font-medium text-white bg-[#D32F2F] rounded-lg hover:bg-red-700 transition-colors">{t('nav.register')}</Link>
-            </div>
+            <>
+              <div className="hidden md:flex items-center gap-2">
+                <Link to="/login" className="px-4 py-1.5 text-sm font-medium text-[#D32F2F] border border-[#D32F2F] rounded-lg hover:bg-red-50 transition-colors">{t('nav.login')}</Link>
+                <Link to="/register" className="px-4 py-1.5 text-sm font-medium text-white bg-[#D32F2F] rounded-lg hover:bg-red-700 transition-colors">{t('nav.register')}</Link>
+              </div>
+
+              {/* Mobile menu button for non-logged in users */}
+              <button 
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
+                className="md:hidden p-2 hover:bg-gray-100 rounded-lg"
+              >
+                {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+              </button>
+            </>
           )}
 
-          {/* Mobile menu */}
-          <button onClick={onMenuToggle} className="md:hidden p-2 hover:bg-gray-100 rounded-lg">
-            <Menu size={20} />
-          </button>
+          {/* Mobile menu for logged-in users (Dashboard) */}
+          {user && (
+            <button onClick={onMenuToggle} className="md:hidden p-2 hover:bg-gray-100 rounded-lg">
+              <Menu size={20} />
+            </button>
+          )}
         </div>
       </div>
+
+      {/* Mobile Menu Dropdown for non-logged-in users */}
+      <AnimatePresence>
+        {!user && mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden border-t border-gray-200 bg-white overflow-hidden"
+          >
+            <div className="px-4 py-4 space-y-3">
+              <Link 
+                to="/" 
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-4 py-2 text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-[#D32F2F] rounded-lg transition-colors"
+              >
+                {t('nav.home')}
+              </Link>
+              <Link 
+                to="/track" 
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-4 py-2 text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-[#D32F2F] rounded-lg transition-colors"
+              >
+                {t('nav.track')}
+              </Link>
+              <hr className="border-gray-100" />
+              <Link 
+                to="/login" 
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-4 py-2 text-sm font-medium text-[#D32F2F] border border-[#D32F2F] rounded-lg hover:bg-red-50 transition-colors text-center"
+              >
+                {t('nav.login')}
+              </Link>
+              <Link 
+                to="/register" 
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-4 py-2 text-sm font-medium text-white bg-[#D32F2F] rounded-lg hover:bg-red-700 transition-colors text-center"
+              >
+                {t('nav.register')}
+              </Link>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   )
 }
