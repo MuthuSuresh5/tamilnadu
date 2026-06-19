@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { useForm } from 'react-hook-form'
-import { Shield, Eye, EyeOff, Phone, Lock } from 'lucide-react'
+import { Shield, Eye, EyeOff, Phone, Lock, CreditCard } from 'lucide-react'
 import { loginUser, clearError } from '../store/slices/authSlice'
 
 export default function LoginPage() {
@@ -13,7 +13,7 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const { loading, error } = useSelector(s => s.auth)
   const [showPass, setShowPass] = useState(false)
-  const { register, handleSubmit, formState: { errors } } = useForm()
+  const { register, handleSubmit, formState: { errors }, watch } = useForm()
 
   const onSubmit = async (data) => {
     const result = await dispatch(loginUser(data))
@@ -39,6 +39,12 @@ export default function LoginPage() {
         </div>
 
         <div className="p-8">
+          <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-700">
+            <p className="font-semibold mb-1">Login Information:</p>
+            <p>• Citizens: Use Phone + Voter ID</p>
+            <p>• Officers/Admin: Use Phone + Password</p>
+          </div>
+
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
               {error}
@@ -47,7 +53,7 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1.5">{t('auth.phonePlaceholder')}</label>
+              <label className="block text-xs font-semibold text-gray-600 mb-1.5">Phone Number *</label>
               <div className="relative">
                 <Phone size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
@@ -60,20 +66,20 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1.5">{t('auth.passwordPlaceholder')}</label>
+              <label className="block text-xs font-semibold text-gray-600 mb-1.5">Voter ID (for Citizens) / Password (for Staff) *</label>
               <div className="relative">
-                <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                <CreditCard size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
-                  {...register('password', { required: true })}
-                  type={showPass ? 'text' : 'password'} placeholder="••••••••"
-                  className={`w-full pl-10 pr-10 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[#D32F2F]/30 ${errors.password ? 'border-red-400' : 'border-gray-200'}`}
+                  {...register('voterId', { required: true })}
+                  type="text" placeholder="ABC1234567 or Password"
+                  className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[#D32F2F]/30 uppercase ${errors.voterId ? 'border-red-400' : 'border-gray-200'}`}
                   onChange={() => dispatch(clearError())}
                 />
-                <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                  {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
               </div>
+              <p className="text-xs text-gray-400 mt-1">Enter your Voter ID if you're a citizen, or password if you're staff</p>
             </div>
+
+            <input type="hidden" {...register('password')} value={watch('voterId') || ''} />
 
             <button type="submit" disabled={loading}
               className="w-full py-3 bg-[#D32F2F] text-white font-bold rounded-xl hover:bg-red-700 transition-all disabled:opacity-60 shadow-md mt-2">
