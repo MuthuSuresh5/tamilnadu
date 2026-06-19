@@ -9,8 +9,17 @@ const generateTokens = (id) => ({
 });
 
 const generateCitizenId = async () => {
-  const count = await User.countDocuments({ role: 'citizen' });
-  return `CIT-${1001 + count}`;
+  // Find the highest existing citizenId and increment
+  const lastCitizen = await User.findOne({ role: 'citizen', citizenId: { $exists: true } })
+    .sort({ citizenId: -1 })
+    .select('citizenId')
+    .lean();
+  
+  if (lastCitizen?.citizenId) {
+    const lastNumber = parseInt(lastCitizen.citizenId.replace('CIT-', ''));
+    return `CIT-${lastNumber + 1}`;
+  }
+  return 'CIT-1001';
 };
 
 exports.register = async (req, res) => {
