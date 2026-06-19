@@ -74,7 +74,7 @@ export default function LandingPage() {
         <div className="relative max-w-6xl mx-auto px-4 py-20 text-center">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
             <div className="inline-flex items-center gap-2 bg-white/20 px-4 py-1.5 rounded-full text-sm font-medium mb-6">
-              <Shield size={14} /> Tamil Nadu Government Official Portal
+              <Shield size={14} /> Tamilaga Vettri Kazhagam Official Portal
             </div>
             <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight">{t('hero.headline')}</h1>
             <p className="text-lg md:text-xl text-red-100 mb-8 max-w-2xl mx-auto">{t('hero.subheadline')}</p>
@@ -174,7 +174,7 @@ export default function LandingPage() {
           <section className="py-14 bg-white">
             <div className="max-w-6xl mx-auto px-4 text-center mb-8">
               <h2 className="text-2xl font-bold text-gray-800">Meet Our Team</h2>
-              <p className="text-sm text-gray-500 mt-1">Officials serving Tamil Nadu citizens</p>
+              <p className="text-sm text-gray-500 mt-1">Officials serving Tamilaga Vettri Kazhagam</p>
             </div>
             <div className="space-y-4">
               {admins.length > 0 && (
@@ -366,9 +366,9 @@ export default function LandingPage() {
           <div>
             <div className="flex items-center gap-2 mb-3">
               <Shield size={20} className="text-[#D32F2F]" />
-              <span className="text-white font-bold">TN Citizen Portal</span>
+              <span className="text-white font-bold">TVK Citizen Portal</span>
             </div>
-            <p className="text-sm">Tamil Nadu Smart Citizen Complaint Management System — Government of Tamil Nadu</p>
+            <p className="text-sm">Tamilaga Vettri Kazhagam (தமிழக வெற்றிக் கழகம்) Complaint Management System</p>
           </div>
           <div>
             <p className="text-white font-semibold mb-3">Quick Links</p>
@@ -386,7 +386,7 @@ export default function LandingPage() {
           </div>
         </div>
         <div className="max-w-6xl mx-auto px-4 mt-8 pt-6 border-t border-gray-800 text-center text-xs">
-          © {new Date().getFullYear()} Government of Tamil Nadu. All rights reserved.
+          © {new Date().getFullYear()} Tamilaga Vettri Kazhagam. All rights reserved.
         </div>
       </footer>
     </div>

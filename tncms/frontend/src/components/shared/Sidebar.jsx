@@ -60,7 +60,7 @@ export default function Sidebar({ isOpen, onClose }) {
             <Shield size={16} className="text-white" />
           </div>
           <div>
-            <p className="text-xs font-bold text-[#D32F2F]">TN CITIZEN</p>
+            <p className="text-xs font-bold text-[#D32F2F]">TVK CITIZEN</p>
             <p className="text-[9px] text-gray-400 capitalize">{user?.role} Portal</p>
           </div>
         </div>

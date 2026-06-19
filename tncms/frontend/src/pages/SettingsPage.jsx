@@ -134,15 +134,15 @@ export default function SettingsPage() {
         <div className="space-y-2 text-sm text-gray-600">
           <div className="flex justify-between py-1 border-b border-gray-50">
             <span className="text-gray-500">Application</span>
-            <span className="font-semibold">TN Smart Complaint System</span>
+            <span className="font-semibold">TVK Complaint System</span>
           </div>
           <div className="flex justify-between py-1 border-b border-gray-50">
             <span className="text-gray-500">Version</span>
             <span className="font-semibold">1.0.0</span>
           </div>
           <div className="flex justify-between py-1 border-b border-gray-50">
-            <span className="text-gray-500">Government</span>
-            <span className="font-semibold">Tamil Nadu</span>
+            <span className="text-gray-500">Organization</span>
+            <span className="font-semibold">Tamilaga Vettri Kazhagam</span>
           </div>
           <div className="flex justify-between py-1">
             <span className="text-gray-500">Support</span>

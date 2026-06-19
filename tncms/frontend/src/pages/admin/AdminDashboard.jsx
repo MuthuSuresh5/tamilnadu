@@ -59,7 +59,7 @@ export default function AdminDashboard() {
     <div className="space-y-6">
       <PageHeader
         title="Admin Dashboard"
-        subtitle="Tamil Nadu Complaint Management Analytics"
+        subtitle="Tamilaga Vettri Kazhagam Complaint Management Analytics"
         actions={
           <div className="flex items-center gap-2">
             {user?.designation && (

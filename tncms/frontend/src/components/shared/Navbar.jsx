@@ -38,7 +38,7 @@ export default function Navbar({ onMenuToggle }) {
             <Shield size={20} className="text-white" />
           </div>
           <div className="hidden sm:block">
-            <p className="text-sm font-bold text-[#D32F2F] leading-tight">TN CITIZEN</p>
+            <p className="text-sm font-bold text-[#D32F2F] leading-tight">TVK CITIZEN</p>
             <p className="text-[10px] text-gray-500 leading-tight">Complaint System</p>
           </div>
         </Link>

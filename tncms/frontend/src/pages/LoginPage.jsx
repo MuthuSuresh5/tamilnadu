@@ -41,7 +41,7 @@ export default function LoginPage() {
           <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
             <Shield size={28} className="text-white" />
           </div>
-          <h1 className="text-xl font-bold">TN Citizen Portal</h1>
+          <h1 className="text-xl font-bold">TVK Citizen Portal</h1>
           <p className="text-red-100 text-sm mt-1">{t('auth.loginTitle')}</p>
         </div>
 
