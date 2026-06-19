@@ -26,6 +26,9 @@ const io = new Server(server, {
 // Connect DB
 connectDB();
 
+// Trust proxy (required for Vercel / reverse proxies)
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
@@ -34,8 +37,9 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 if (process.env.NODE_ENV !== 'production') app.use(morgan('dev'));
 
 // Rate limiting
-app.use('/api/', rateLimit({ windowMs: 15 * 60 * 1000, max: 200, message: { success: false, message: 'Too many requests, please try again later' } }));
-app.use('/api/auth/login', rateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: { success: false, message: 'Too many login attempts, please try again later' } }));
+const keyGenerator = (req) => req.ip || req.headers['x-forwarded-for']?.split(',')[0].trim() || 'unknown';
+app.use('/api/', rateLimit({ windowMs: 15 * 60 * 1000, max: 200, keyGenerator, message: { success: false, message: 'Too many requests, please try again later' } }));
+app.use('/api/auth/login', rateLimit({ windowMs: 15 * 60 * 1000, max: 10, keyGenerator, message: { success: false, message: 'Too many login attempts, please try again later' } }));
 
 // Share io with controllers
 app.set('io', io);
