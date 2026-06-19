@@ -16,10 +16,17 @@ export default function LoginPage() {
   const { register, handleSubmit, formState: { errors }, watch } = useForm()
 
   const onSubmit = async (data) => {
-    const result = await dispatch(loginUser(data))
+    // Send voterId value as both voterId and password
+    const loginData = {
+      phone: data.phone,
+      voterId: data.voterId,
+      password: data.voterId  // Send same value as password for staff
+    };
+    
+    const result = await dispatch(loginUser(loginData));
     if (result.meta.requestStatus === 'fulfilled') {
-      const role = result.payload.data.role
-      navigate(role === 'admin' ? '/admin' : role === 'officer' ? '/officer' : '/citizen')
+      const role = result.payload.data.role;
+      navigate(role === 'admin' ? '/admin' : role === 'officer' ? '/officer' : '/citizen');
     }
   }
 
@@ -71,8 +78,6 @@ export default function LoginPage() {
                 />
               </div>
             </div>
-
-            <input type="hidden" {...register('password')} value={watch('voterId') || ''} />
 
             <button type="submit" disabled={loading}
               className="w-full py-3 bg-[#D32F2F] text-white font-bold rounded-xl hover:bg-red-700 transition-all disabled:opacity-60 shadow-md mt-2">
