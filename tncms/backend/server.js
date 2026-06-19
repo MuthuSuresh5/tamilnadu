@@ -19,6 +19,15 @@ process.on('uncaughtException', (err) => {
 const app = express();
 const server = http.createServer(app);
 
+// Allowed origins for CORS
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  process.env.CLIENT_URL?.replace(/\/$/, ''), // without trailing slash
+  'https://tn-complaint.vercel.app',
+  'https://tamilnadu-ten.vercel.app',
+  'http://localhost:5173',
+].filter(Boolean);
+
 const io = new Server(server, {
   cors: { 
     origin: allowedOrigins,
@@ -33,27 +42,10 @@ connectDB();
 // Trust proxy (required for Vercel / reverse proxies)
 app.set('trust proxy', 1);
 
-// Allowed origins for CORS
-const allowedOrigins = [
-  process.env.CLIENT_URL,
-  process.env.CLIENT_URL?.replace(/\/$/, ''), // without trailing slash
-  'https://tn-complaint.vercel.app',
-  'https://tamilnadu-ten.vercel.app',
-  'http://localhost:5173',
-].filter(Boolean);
-
 // Middleware
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 
 // CORS - handle multiple origins
-const allowedOrigins = [
-  process.env.CLIENT_URL,
-  process.env.CLIENT_URL?.replace(/\/$/, ''), // without trailing slash
-  'https://tn-complaint.vercel.app',
-  'https://tamilnadu-ten.vercel.app',
-  'http://localhost:5173',
-].filter(Boolean);
-
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (mobile apps, Postman, etc.)
@@ -128,9 +120,16 @@ io.on('connection', (socket) => {
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
-const httpServer = server.listen(PORT, () => logger.info(`Server running on port ${PORT} [${process.env.NODE_ENV}]`));
+
+// Only listen if not in serverless environment
+if (process.env.VERCEL !== '1') {
+  server.listen(PORT, () => logger.info(`Server running on port ${PORT} [${process.env.NODE_ENV}]`));
+}
 
 // Handle unhandled promise rejections (log only — don't exit on Vercel)
 process.on('unhandledRejection', (err) => {
   logger.error(`Unhandled Rejection: ${err.message}`);
 });
+
+// Export for Vercel serverless
+module.exports = app;
