@@ -36,11 +36,38 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
   try {
-    const { phone, password } = req.body;
+    const { phone, password, voterId } = req.body;
+    
+    // Find user by phone
     const user = await User.findOne({ phone }).select('+password +refreshToken');
-    if (!user || !(await user.comparePassword(password)))
+    if (!user) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
-    if (!user.isActive) return res.status(403).json({ success: false, message: 'Account deactivated' });
+    }
+    
+    if (!user.isActive) {
+      return res.status(403).json({ success: false, message: 'Account deactivated' });
+    }
+    
+    // Citizens login with phone + voter ID
+    if (user.role === 'citizen') {
+      if (!voterId) {
+        return res.status(400).json({ success: false, message: 'Voter ID is required for citizen login' });
+      }
+      
+      // Check if voter ID matches
+      if (user.voterId !== voterId) {
+        return res.status(401).json({ success: false, message: 'Invalid voter ID' });
+      }
+    } else {
+      // Admin and Officer login with phone + password
+      if (!password) {
+        return res.status(400).json({ success: false, message: 'Password is required' });
+      }
+      
+      if (!(await user.comparePassword(password))) {
+        return res.status(401).json({ success: false, message: 'Invalid password' });
+      }
+    }
 
     const { accessToken, refreshToken } = generateTokens(user._id);
     user.refreshToken = refreshToken;
