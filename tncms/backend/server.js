@@ -36,13 +36,12 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 if (process.env.NODE_ENV !== 'production') app.use(morgan('dev'));
 
-// Rate limiting
-const keyGenerator = (req) => req.ip || req.headers['x-forwarded-for']?.split(',')[0].trim() || 'unknown'
+// Rate limiting - Vercel compatible
 const rateLimitConfig = (max) => ({
   windowMs: 15 * 60 * 1000,
   max,
-  keyGenerator,
-  validate: { xForwardedForHeader: false },
+  standardHeaders: true,
+  legacyHeaders: false,
   message: { success: false, message: 'Too many requests, please try again later' },
 })
 app.use('/api/', rateLimit(rateLimitConfig(200)))
@@ -55,6 +54,8 @@ app.set('io', io);
 app.use('/uploads', express.static(require('path').join(__dirname, 'uploads')));
 
 // Routes
+app.get('/', (req, res) => res.json({ service: 'TN CMS API', status: 'running', version: '1.0.0' }));
+
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/complaints', require('./routes/complaints'));
 app.use('/api/wards', require('./routes/wards'));
