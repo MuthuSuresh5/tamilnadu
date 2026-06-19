@@ -39,12 +39,6 @@ export default function LoginPage() {
         </div>
 
         <div className="p-8">
-          <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-700">
-            <p className="font-semibold mb-1">Login Information:</p>
-            <p>• Citizens: Use Phone + Voter ID</p>
-            <p>• Officers/Admin: Use Phone + Password</p>
-          </div>
-
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
               {error}
@@ -66,17 +60,16 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1.5">Voter ID (for Citizens) / Password (for Staff) *</label>
+              <label className="block text-xs font-semibold text-gray-600 mb-1.5">Voter ID *</label>
               <div className="relative">
                 <CreditCard size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
                   {...register('voterId', { required: true })}
-                  type="text" placeholder="ABC1234567 or Password"
+                  type="text" placeholder="ABC1234567"
                   className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[#D32F2F]/30 uppercase ${errors.voterId ? 'border-red-400' : 'border-gray-200'}`}
                   onChange={() => dispatch(clearError())}
                 />
               </div>
-              <p className="text-xs text-gray-400 mt-1">Enter your Voter ID if you're a citizen, or password if you're staff</p>
             </div>
 
             <input type="hidden" {...register('password')} value={watch('voterId') || ''} />
