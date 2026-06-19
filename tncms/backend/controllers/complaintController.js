@@ -48,7 +48,7 @@ exports.submitComplaint = async (req, res) => {
     const { citizenName, phone, voterId, wardNumber, category, title, description, locationAddress, lat, lng, priority } = req.body;
 
     const count = await Complaint.countDocuments();
-    const complaintId = `TN-CMP-${24000 + count + 1}`;
+    const complaintId = `TVK-CMP-${24000 + count + 1}`;
 
     // AI features
     const aiCategory = autoCategory(title, description);

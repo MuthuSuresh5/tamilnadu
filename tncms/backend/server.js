@@ -92,7 +92,7 @@ if (process.env.VERCEL !== '1') {
 
 // Routes
 app.get('/', (req, res) => res.json({ 
-  service: 'TN CMS API', 
+  service: 'TVK CMS API', 
   status: 'running', 
   version: '1.0.0',
   timestamp: new Date().toISOString()
