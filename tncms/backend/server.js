@@ -37,9 +37,16 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 if (process.env.NODE_ENV !== 'production') app.use(morgan('dev'));
 
 // Rate limiting
-const keyGenerator = (req) => req.ip || req.headers['x-forwarded-for']?.split(',')[0].trim() || 'unknown';
-app.use('/api/', rateLimit({ windowMs: 15 * 60 * 1000, max: 200, keyGenerator, message: { success: false, message: 'Too many requests, please try again later' } }));
-app.use('/api/auth/login', rateLimit({ windowMs: 15 * 60 * 1000, max: 10, keyGenerator, message: { success: false, message: 'Too many login attempts, please try again later' } }));
+const keyGenerator = (req) => req.ip || req.headers['x-forwarded-for']?.split(',')[0].trim() || 'unknown'
+const rateLimitConfig = (max) => ({
+  windowMs: 15 * 60 * 1000,
+  max,
+  keyGenerator,
+  validate: { xForwardedForHeader: false },
+  message: { success: false, message: 'Too many requests, please try again later' },
+})
+app.use('/api/', rateLimit(rateLimitConfig(200)))
+app.use('/api/auth/login', rateLimit({ ...rateLimitConfig(10), message: { success: false, message: 'Too many login attempts, please try again later' } }))
 
 // Share io with controllers
 app.set('io', io);
