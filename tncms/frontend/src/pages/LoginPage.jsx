@@ -66,7 +66,7 @@ export default function LoginPage() {
                 <input
                   {...register('voterId', { required: true })}
                   type="text" placeholder="ABC1234567"
-                  className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[#D32F2F]/30 uppercase ${errors.voterId ? 'border-red-400' : 'border-gray-200'}`}
+                  className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[#D32F2F]/30 ${errors.voterId ? 'border-red-400' : 'border-gray-200'}`}
                   onChange={() => dispatch(clearError())}
                 />
               </div>
