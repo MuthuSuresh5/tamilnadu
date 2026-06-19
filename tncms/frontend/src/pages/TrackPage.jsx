@@ -43,8 +43,8 @@ export default function TrackPage() {
         </motion.div>
 
         {/* Search */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
-          <div className="flex gap-3">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 mb-6">
+          <div className="flex flex-col sm:flex-row gap-3">
             <input
               value={query}
               onChange={e => setQuery(e.target.value)}
@@ -53,8 +53,8 @@ export default function TrackPage() {
               className="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#D32F2F]/30"
             />
             <button onClick={handleSearch} disabled={loading}
-              className="px-6 py-3 bg-[#D32F2F] text-white font-semibold rounded-xl hover:bg-red-700 transition-all disabled:opacity-60 flex items-center gap-2">
-              <Search size={16} /> {t('track.search')}
+              className="w-full sm:w-auto px-6 py-3 bg-[#D32F2F] text-white font-semibold rounded-xl hover:bg-red-700 transition-all disabled:opacity-60 flex items-center justify-center gap-2">
+              <Search size={16} /> {loading ? 'Searching...' : t('track.search')}
             </button>
           </div>
           {error && <p className="text-red-500 text-sm mt-3">{error}</p>}
@@ -64,22 +64,22 @@ export default function TrackPage() {
           {complaint && (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-5">
               {/* Main Card */}
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6">
                 <div className="flex items-start justify-between flex-wrap gap-3 mb-5">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-lg">{categoryIcon(complaint.category)}</span>
-                      <h2 className="text-lg font-bold text-gray-800">{complaint.title}</h2>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span className="text-lg flex-shrink-0">{categoryIcon(complaint.category)}</span>
+                      <h2 className="text-base md:text-lg font-bold text-gray-800 break-words">{complaint.title}</h2>
                     </div>
-                    <p className="text-[#D32F2F] font-mono font-semibold text-sm">{complaint.complaintId}</p>
+                    <p className="text-[#D32F2F] font-mono font-semibold text-xs md:text-sm">{complaint.complaintId}</p>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <StatusBadge status={complaint.status} />
                     <PriorityBadge priority={complaint.priority} />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-5">
                   {[
                     { icon: User, label: t('track.officer'), value: complaint.assignedOfficerName || 'Not assigned' },
                     { icon: MapPin, label: t('track.ward'), value: `Ward ${complaint.wardNumber}` },
@@ -91,7 +91,7 @@ export default function TrackPage() {
                         <Icon size={12} className="text-gray-400" />
                         <p className="text-xs text-gray-400">{label}</p>
                       </div>
-                      <p className="text-sm font-semibold text-gray-700">{value}</p>
+                      <p className="text-sm font-semibold text-gray-700 break-words">{value}</p>
                     </div>
                   ))}
                 </div>
@@ -112,7 +112,7 @@ export default function TrackPage() {
               </div>
 
               {/* Progress Stepper */}
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6">
                 <h3 className="text-sm font-bold text-gray-700 mb-6">{t('track.timeline')}</h3>
                 <div className="relative">
                   <div className="absolute top-5 left-5 right-5 h-0.5 bg-gray-200" />
@@ -120,16 +120,16 @@ export default function TrackPage() {
                     className="absolute top-5 left-5 h-0.5 bg-[#D32F2F] transition-all duration-700"
                     style={{ width: complaint.status === 'rejected' ? '0%' : `${(Math.max(0, currentStep) / (STEPS.length - 1)) * 100}%` }}
                   />
-                  <div className="relative grid grid-cols-4 gap-2">
+                  <div className="relative grid grid-cols-4 gap-1 md:gap-2">
                     {STEPS.map((step, i) => {
                       const done = currentStep >= i && complaint.status !== 'rejected'
                       const active = currentStep === i
                       return (
                         <div key={step} className="flex flex-col items-center gap-2">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all z-10 ${done ? 'bg-[#D32F2F] border-[#D32F2F]' : 'bg-white border-gray-200'}`}>
-                            {done ? <CheckCircle size={18} className="text-white" /> : <Clock size={18} className="text-gray-300" />}
+                          <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center border-2 transition-all z-10 ${done ? 'bg-[#D32F2F] border-[#D32F2F]' : 'bg-white border-gray-200'}`}>
+                            {done ? <CheckCircle size={16} className="text-white md:w-[18px] md:h-[18px]" /> : <Clock size={16} className="text-gray-300 md:w-[18px] md:h-[18px]" />}
                           </div>
-                          <p className={`text-xs font-medium text-center capitalize ${done ? 'text-[#D32F2F]' : 'text-gray-400'}`}>{t(`status.${step}`)}</p>
+                          <p className={`text-[10px] md:text-xs font-medium text-center capitalize leading-tight ${done ? 'text-[#D32F2F]' : 'text-gray-400'}`}>{t(`status.${step}`)}</p>
                         </div>
                       )
                     })}
@@ -137,7 +137,7 @@ export default function TrackPage() {
                 </div>
 
                 {complaint.status === 'rejected' && (
-                  <div className="mt-4 p-3 bg-red-50 rounded-xl flex items-center gap-2 text-sm text-red-600">
+                  <div className="mt-4 p-3 bg-red-50 rounded-xl flex items-center gap-2 text-xs md:text-sm text-red-600">
                     <AlertCircle size={16} /> Complaint has been rejected
                   </div>
                 )}
