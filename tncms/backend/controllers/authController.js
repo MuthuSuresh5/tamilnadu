@@ -16,6 +16,11 @@ const generateCitizenId = async () => {
 exports.register = async (req, res) => {
   try {
     const { name, phone, email, password, voterId, wardNumber, address } = req.body;
+    
+    if (!name || !phone || !password) {
+      return res.status(400).json({ success: false, message: 'Name, phone, and password are required' });
+    }
+    
     const exists = await User.findOne({ phone });
     if (exists) return res.status(400).json({ success: false, message: 'Phone number already registered' });
 
@@ -25,12 +30,17 @@ exports.register = async (req, res) => {
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
 
-    await Notification.create({ userId: user._id, title: 'Welcome!', message: `Welcome to TN Smart Complaint System, ${name}!`, type: 'system' });
+    // Create welcome notification (don't fail registration if this fails)
+    try {
+      await Notification.create({ userId: user._id, title: 'Welcome!', message: `Welcome to TN Smart Complaint System, ${name}!`, type: 'system' });
+    } catch (notifError) {
+      logger.error(`Notification creation failed: ${notifError.message}`);
+    }
 
     res.status(201).json({ success: true, data: user, accessToken, refreshToken });
   } catch (error) {
-    logger.error(error);
-    res.status(500).json({ success: false, message: error.message });
+    logger.error(`Registration error: ${error.message}`);
+    res.status(500).json({ success: false, message: error.message || 'Registration failed' });
   }
 };
 
