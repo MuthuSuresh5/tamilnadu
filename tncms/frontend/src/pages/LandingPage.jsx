@@ -30,6 +30,7 @@ export default function LandingPage() {
   const [submitting, setSubmitting] = useState(false)
   const [successData, setSuccessData] = useState(null)
   const [previews, setPreviews] = useState([])
+  const [selectedFiles, setSelectedFiles] = useState([])
   const formRef = useRef(null)
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm()
@@ -48,11 +49,15 @@ export default function LandingPage() {
         if (k === 'images') return
         if (v !== undefined && v !== null && v !== '') fd.append(k, v)
       })
-      if (data.images?.[0]) Array.from(data.images).forEach(f => fd.append('images', f))
+      // Use previews source files directly
+      if (selectedFiles.length > 0) {
+        selectedFiles.forEach(f => fd.append('images', f))
+      }
       const res = await complaintService.submit(fd)
       setSuccessData(res.data.data)
       reset()
       setPreviews([])
+      setSelectedFiles([])
     } catch (e) {
       alert(e.response?.data?.message || 'Submission failed')
     }
@@ -61,6 +66,7 @@ export default function LandingPage() {
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files)
+    setSelectedFiles(files)
     setPreviews(files.map(f => URL.createObjectURL(f)))
   }
 
@@ -315,7 +321,7 @@ export default function LandingPage() {
               <label className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-[#D32F2F]/50 hover:bg-red-50/30 transition-all">
                 <Camera size={22} className="text-gray-400 mb-1" />
                 <p className="text-xs text-gray-400">Click to upload images</p>
-                <input {...register('images')} type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange} />
+                <input type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange} />
               </label>
               {previews.length > 0 && (
                 <div className="flex gap-2 mt-3 flex-wrap">

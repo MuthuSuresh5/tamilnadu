@@ -25,7 +25,7 @@ export const authService = {
 }
 
 export const complaintService = {
-  submit: (data) => api.post('/complaints', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  submit: (data) => publicApi.post('/complaints', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
   track: (id) => api.get(`/complaints/track/${id}`),
   getMyComplaints: () => api.get('/complaints/my'),
   getAll: (params) => api.get('/complaints', { params }),
