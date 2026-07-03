@@ -26,11 +26,11 @@ const createStorage = (folder) => {
     try {
       return new CloudinaryStorage({
         cloudinary,
-        params: {
+        params: async (req, file) => ({
           folder: `tncms/${folder}`,
           allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
           transformation: [{ width: 1024, crop: 'limit', quality: 'auto' }],
-        },
+        }),
       });
     } catch (error) {
       logger.error(`Cloudinary storage creation failed: ${error.message}`);
