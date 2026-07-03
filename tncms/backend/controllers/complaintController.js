@@ -63,7 +63,9 @@ exports.submitComplaint = async (req, res) => {
       createdAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
     });
 
-    const images = req.files?.map(f => f.resolvedPath) || [];
+    const images = req.files?.map(f => f.resolvedPath || f.path || f.secure_url) || [];
+    logger.info(`Complaint images: ${JSON.stringify(images)}`);
+    logger.info(`req.files: ${JSON.stringify(req.files?.map(f => ({ path: f.path, resolvedPath: f.resolvedPath, secure_url: f.secure_url, filename: f.filename })))}`);
 
     // Get citizen ID
     const citizen = await User.findOne({ phone });
@@ -208,7 +210,8 @@ exports.updateComplaintStatus = async (req, res) => {
         return res.status(403).json({ success: false, message: 'Not your ward complaint' })
     }
 
-    const completionPhotos = req.files?.map(f => f.resolvedPath) || [];
+    const completionPhotos = req.files?.map(f => f.resolvedPath || f.path || f.secure_url) || [];
+    logger.info(`Completion photos: ${JSON.stringify(completionPhotos)}`);
 
     complaint.status = status;
     if (remarks) complaint.remarks = remarks;

@@ -67,7 +67,10 @@ const createStorage = (folder) => {
 };
 
 const resolveFilePath = (folder, file) => {
-  if (isCloudinaryConfigured) return file.path;
+  if (isCloudinaryConfigured) {
+    // multer-storage-cloudinary stores URL in file.path
+    return file.path || file.secure_url || file.url;
+  }
   return `/uploads/${folder}/${file.filename}`;
 };
 

@@ -36,8 +36,16 @@ const io = new Server(server, {
   },
 });
 
-// Connect DB
-connectDB();
+// Connect DB on every request (required for Vercel serverless)
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    logger.error(`DB connection failed: ${err.message}`);
+    res.status(500).json({ success: false, message: 'Database connection failed. Please try again.' });
+  }
+});
 
 // Trust proxy (required for Vercel / reverse proxies)
 app.set('trust proxy', 1);

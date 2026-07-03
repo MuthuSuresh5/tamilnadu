@@ -1,42 +1,45 @@
 const mongoose = require('mongoose');
 const logger = require('../utils/logger');
 
-let isConnected = false;
-let connectionPromise = null;
+// Cache connection across serverless invocations
+let cached = global.mongoose;
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
 
 const connectDB = async () => {
-  if (isConnected && mongoose.connection.readyState === 1) {
-    return;
-  }
-  
-  // Reuse existing connection attempt
-  if (connectionPromise) {
-    return connectionPromise;
-  }
-  
-  if (mongoose.connection.readyState === 1) {
-    isConnected = true;
-    return;
+  // Already connected
+  if (cached.conn && mongoose.connection.readyState === 1) {
+    return cached.conn;
   }
 
-  connectionPromise = mongoose.connect(process.env.MONGO_URI, {
-    maxPoolSize: 10,
-    serverSelectionTimeoutMS: 15000,
-    socketTimeoutMS: 45000,
-    retryWrites: true,
-    w: 'majority',
-  });
+  // Reuse pending connection promise
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(process.env.MONGO_URI, {
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 15000,
+      socketTimeoutMS: 45000,
+      retryWrites: true,
+      w: 'majority',
+      bufferCommands: false,
+    }).then(conn => {
+      logger.info(`MongoDB Connected: ${mongoose.connection.host}`);
+      return conn;
+    }).catch(err => {
+      cached.promise = null;
+      logger.error(`MongoDB Error: ${err.message}`);
+      throw err;
+    });
+  }
 
   try {
-    await connectionPromise;
-    isConnected = true;
-    logger.info(`MongoDB Connected: ${mongoose.connection.host}`);
-  } catch (error) {
-    isConnected = false;
-    connectionPromise = null;
-    logger.error(`MongoDB Error: ${error.message}`);
-    throw new Error(`Database connection failed: ${error.message}`);
+    cached.conn = await cached.promise;
+  } catch (err) {
+    cached.promise = null;
+    throw new Error(`Database connection failed: ${err.message}`);
   }
+
+  return cached.conn;
 };
 
 module.exports = connectDB;
