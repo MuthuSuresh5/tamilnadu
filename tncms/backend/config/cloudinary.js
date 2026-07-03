@@ -72,28 +72,19 @@ const resolveFilePath = (folder, file) => {
 };
 
 const wrapMulter = (upload, folder) => (req, res, next) => {
-  // If no file in request, skip multer entirely
-  if (!req.headers['content-type']?.includes('multipart/form-data')) {
-    return next();
-  }
-  
   upload(req, res, (err) => {
     if (err) {
       logger.error(`Upload error: ${err.message}`);
-      
-      // Check if it's a Cloudinary configuration error
-      if (err.message?.includes('Invalid Signature') || 
+      if (err.message?.includes('Invalid Signature') ||
           err.message?.includes('Cloudinary') ||
           err.message?.includes('require Cloudinary configuration')) {
-        return res.status(500).json({ 
-          success: false, 
-          message: 'Image upload is currently unavailable. Cloudinary storage is not configured. Please contact administrator or update without photo.' 
+        return res.status(500).json({
+          success: false,
+          message: 'Image upload failed. Cloudinary is not configured properly.'
         });
       }
-      
       return res.status(400).json({ success: false, message: err.message });
     }
-    
     if (req.files?.length) req.files.forEach(f => { f.resolvedPath = resolveFilePath(folder, f); });
     if (req.file) req.file.resolvedPath = resolveFilePath(folder, req.file);
     next();
