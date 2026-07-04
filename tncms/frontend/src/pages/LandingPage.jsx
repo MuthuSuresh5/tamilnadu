@@ -80,7 +80,7 @@ export default function LandingPage() {
         <div className="relative max-w-6xl mx-auto px-4 py-20 text-center">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
             <div className="inline-flex items-center gap-2 bg-white/20 px-4 py-1.5 rounded-full text-sm font-medium mb-6">
-              <Shield size={14} /> Tamilaga Vettri Kazhagam Official Portal
+              <Shield size={14} /> Vikramasingapuram Official Portal
             </div>
             <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight">{t('hero.headline')}</h1>
             <p className="text-lg md:text-xl text-red-100 mb-8 max-w-2xl mx-auto">{t('hero.subheadline')}</p>
