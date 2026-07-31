@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Bell, Menu, X, Shield, ChevronDown, User, LogOut, Settings } from 'lucide-react'
+import { Bell, Menu, X, ChevronDown, User, LogOut, Settings } from 'lucide-react'
 import { logout } from '../../store/slices/authSlice'
 
 export default function Navbar({ onMenuToggle }) {
@@ -31,12 +31,10 @@ export default function Navbar({ onMenuToggle }) {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
+      <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-[72px]">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2">
-          <div className="w-9 h-9 bg-[#D32F2F] rounded-lg flex items-center justify-center">
-            <Shield size={20} className="text-white" />
-          </div>
+        <Link to="/" className="flex items-center gap-3">
+          <img src="/vijay.png" alt="CM Vijay" className="w-12 h-12 rounded-full object-cover border-2 border-[#D32F2F] shadow-md flex-shrink-0" />
           <div className="hidden sm:block">
             <p className="text-sm font-bold text-[#D32F2F] leading-tight">Tamilaga Vettri Kazhagam</p>
             <p className="text-[10px] text-gray-500 leading-tight">Vikramasingapuram</p>

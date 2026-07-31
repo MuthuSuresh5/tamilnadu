@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Home, FileText, Bell, User, LogOut, Settings, BarChart,
-  Shield, Users, MapPin, Plus, Eye, X
+  Users, MapPin, Plus, Eye, X
 } from 'lucide-react'
 import { logout } from '../../store/slices/authSlice'
 import { useNavigate } from 'react-router-dom'
@@ -56,9 +56,7 @@ export default function Sidebar({ isOpen, onClose }) {
       {/* Header */}
       <div className="flex items-center justify-between p-5 border-b border-gray-100">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-[#D32F2F] rounded-lg flex items-center justify-center">
-            <Shield size={16} className="text-white" />
-          </div>
+          <img src="/vijay.png" alt="CM" className="w-8 h-8 rounded-full object-cover border-2 border-[#D32F2F] flex-shrink-0" />
           <div>
             <p className="text-xs font-bold text-[#D32F2F]">Tamilaga Vettri Kazhagam</p>
             <p className="text-[9px] text-gray-400">Vikramasingapuram</p>
