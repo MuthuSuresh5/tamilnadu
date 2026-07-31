@@ -77,29 +77,28 @@ export default function LandingPage() {
       {/* Hero */}
       <section className="relative pt-[72px] overflow-hidden bg-gradient-to-br from-[#D32F2F] via-red-700 to-red-900 text-white min-h-[720px] flex flex-col">
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.4\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }} />
-        <div className="relative flex-1 container mx-auto px-6 lg:px-10 py-16 lg:py-20">
-          <div className="grid lg:grid-cols-[60%_40%] gap-8 items-center min-h-[560px]">
+        <div className="relative flex-1 flex items-center justify-center px-4 py-12">
+          <div className="flex flex-col lg:flex-row items-center justify-center gap-6 w-full max-w-5xl mx-auto">
             {/* Left: Text */}
-            <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-              <div className="inline-flex items-center gap-2 bg-white/20 px-4 py-1.5 rounded-full text-sm font-medium mb-6">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
+              className="flex-1 text-center lg:text-left"
+            >
+              <div className="inline-flex items-center gap-2 bg-white/20 px-4 py-1.5 rounded-full text-sm font-medium mb-5">
                 <Shield size={14} /> Tamilaga Vettri Kazhagam Official Portal
               </div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight">{t('hero.headline')}</h1>
-              <p className="text-lg md:text-xl text-red-100 mb-8 max-w-xl">{t('hero.subheadline')}</p>
-              <div className="flex flex-col sm:flex-row items-start gap-4">
+              <p className="text-lg md:text-xl text-red-100 mb-8">{t('hero.subheadline')}</p>
+              <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-4">
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ duration: 0.3 }}
+                  whileHover={{ scale: 1.05 }} transition={{ duration: 0.3 }}
                   onClick={() => formRef.current?.scrollIntoView({ behavior: 'smooth' })}
                   className="px-8 py-3.5 bg-[#FFC107] text-gray-900 font-bold rounded-xl hover:bg-yellow-400 transition-all shadow-lg"
                 >
                   {t('hero.submitBtn')}
                 </motion.button>
                 <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.3 }}>
-                  <Link
-                    to="/track"
-                    className="px-8 py-3.5 bg-white/20 backdrop-blur text-white font-semibold rounded-xl border border-white/30 hover:bg-white/30 transition-all block"
-                  >
+                  <Link to="/track" className="px-8 py-3.5 bg-white/20 backdrop-blur text-white font-semibold rounded-xl border border-white/30 hover:bg-white/30 transition-all block">
                     {t('hero.trackBtn')}
                   </Link>
                 </motion.div>
@@ -108,28 +107,18 @@ export default function LandingPage() {
 
             {/* Right: CM Photo Card */}
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7 }}
-              className="flex justify-center lg:justify-end"
+              initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}
+              className="flex-shrink-0 flex justify-center"
             >
               <motion.div
-                whileHover={{ scale: 1.03 }}
-                transition={{ duration: 0.3 }}
-                className="w-[260px] h-[360px] md:w-[300px] md:h-[400px] lg:w-[320px] lg:h-[420px] rounded-[24px] bg-white p-[10px] border-[6px] border-[#F5C542] shadow-2xl overflow-hidden flex-shrink-0"
+                whileHover={{ scale: 1.03 }} transition={{ duration: 0.3 }}
+                className="w-[240px] h-[320px] md:w-[280px] md:h-[370px] lg:w-[300px] lg:h-[400px] rounded-[24px] bg-white p-[8px] border-[6px] border-[#F5C542] shadow-2xl overflow-hidden"
               >
                 <div className="relative w-full h-full rounded-[18px] overflow-hidden">
-                  <img
-                    src="/vijay.png"
-                    alt="C. Joseph Vijay"
-                    className="w-full h-full object-cover object-top"
-                  />
-                  {/* Bottom Overlay */}
+                  <img src="/vijay.png" alt="C. Joseph Vijay" className="w-full h-full object-cover object-top" />
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent px-4 py-4">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="bg-[#F5C542] text-black text-[10px] font-extrabold px-2 py-0.5 rounded-full">CM</span>
-                    </div>
-                    <p className="text-white font-bold text-lg leading-tight">C. Joseph Vijay</p>
+                    <span className="bg-[#F5C542] text-black text-[10px] font-extrabold px-2 py-0.5 rounded-full">CM</span>
+                    <p className="text-white font-bold text-lg leading-tight mt-1">C. Joseph Vijay</p>
                     <p className="text-white/80 text-xs mt-0.5">Chief Minister of Tamil Nadu</p>
                   </div>
                 </div>
