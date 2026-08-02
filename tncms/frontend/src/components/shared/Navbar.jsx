@@ -37,7 +37,7 @@ export default function Navbar({ onMenuToggle }) {
           <img src="/vijay.png" alt="CM Vijay" className="w-12 h-12 rounded-full object-cover border-2 border-[#D32F2F] shadow-md flex-shrink-0" />
           <div>
             <p className="text-sm font-bold text-[#D32F2F] leading-tight">Tamilaga Vettri Kazhagam</p>
-            <p className="text-[10px] text-gray-500 leading-tight">Vikramasingapuram</p>
+            <p className="text-[10px] text-gray-500 leading-tight">Ambasamudram</p>
           </div>
         </Link>
 
