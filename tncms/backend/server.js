@@ -25,6 +25,15 @@ const allowedOrigins = [
   'http://localhost:5173',
 ].filter(Boolean);
 
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true;
+  const normalized = origin.replace(/\/$/, '');
+  if (allowedOrigins.some(o => o?.replace(/\/$/, '') === normalized)) return true;
+  // Allow all Vercel preview deployments for this project
+  if (/^https:\/\/tn-complaint-.*\.vercel\.app$/.test(origin)) return true;
+  return false;
+};
+
 // Connect DB on every request (required for Vercel serverless)
 app.use(async (req, res, next) => {
   try {
@@ -44,16 +53,8 @@ app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin) return callback(null, true);
-    const normalizedOrigin = origin.replace(/\/$/, '');
-    const isAllowed = allowedOrigins.some(allowed => 
-      allowed?.replace(/\/$/, '') === normalizedOrigin
-    );
-    if (isAllowed) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
+    if (isAllowedOrigin(origin)) callback(null, true);
+    else callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
