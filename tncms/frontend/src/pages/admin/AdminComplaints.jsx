@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Search, Trash2, Camera } from 'lucide-react'
+import { Search, Trash2, Camera, Download } from 'lucide-react'
+import { jsPDF } from 'jspdf'
+import html2canvas from 'html2canvas'
 import { StatusBadge, PriorityBadge, LoadingSpinner, EmptyState, PageHeader, Modal } from '../../components/shared/UI'
 import { complaintService, reportService } from '../../services'
 import { formatDate, categoryIcon, downloadBlob, resolveUrl } from '../../utils/helpers'
@@ -81,6 +83,117 @@ export default function AdminComplaints() {
 
   const setFilter = (key, val) => setFilters(f => ({ ...f, [key]: val, page: 1 }))
 
+  const buildComplaintHTML = (c) => {
+    const statusColors = { submitted:'#1d4ed8', accepted:'#b45309', processing:'#c2410c', completed:'#15803d', rejected:'#b91c1c' }
+    const priorityColors = { low:'#6b7280', medium:'#1d4ed8', high:'#c2410c', urgent:'#b91c1c' }
+    const sc = statusColors[c.status] || '#6b7280'
+    const pc = priorityColors[c.priority] || '#6b7280'
+    const photoHtml = (urls) => !urls?.length ? '' : urls.slice(0, 6).map(src =>
+      `<img src="${resolveUrl(src)}" crossorigin="anonymous" style="width:120px;height:90px;object-fit:cover;border-radius:6px;border:1px solid #e5e7eb;" />`
+    ).join('')
+    return `
+      <div style="background:#D32F2F;padding:18px 24px;">
+        <div style="color:#fff;font-size:18px;font-weight:700;text-align:center;">Tamilaga Vettri Kazhagam</div>
+        <div style="color:#ffcdd2;font-size:11px;text-align:center;margin-top:3px;">Vikramasingapuram | Complaint Report</div>
+        <div style="color:#ffcdd2;font-size:10px;text-align:right;margin-top:4px;">Generated: ${new Date().toLocaleString('en-IN')}</div>
+      </div>
+      <div style="padding:20px 24px;">
+        <div style="background:#f9fafb;border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+          <span style="color:#D32F2F;font-weight:700;font-size:15px;">${c.complaintId}</span>
+          <span style="display:inline-flex;align-items:center;justify-content:center;background:${sc}22;color:${sc};padding:0 12px;height:22px;border-radius:20px;font-size:11px;font-weight:600;text-transform:capitalize;box-sizing:border-box;vertical-align:middle;">${c.status}</span>
+          <span style="display:inline-flex;align-items:center;justify-content:center;background:${pc}22;color:${pc};padding:0 12px;height:22px;border-radius:20px;font-size:11px;font-weight:600;text-transform:capitalize;box-sizing:border-box;vertical-align:middle;">${c.priority}</span>
+          <span style="color:#6b7280;font-size:11px;">${c.category || ''}</span>
+        </div>
+        <div style="border-left:3px solid #D32F2F;padding-left:10px;margin-bottom:12px;"><div style="font-weight:700;font-size:11px;color:#6b7280;letter-spacing:.05em;">CITIZEN INFORMATION</div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+          <div><div style="font-size:10px;color:#9ca3af;">Name</div><div style="font-weight:600;">${c.citizenName || '—'}</div></div>
+          <div><div style="font-size:10px;color:#9ca3af;">Phone</div><div style="font-weight:600;">${c.phone || '—'}</div></div>
+          <div><div style="font-size:10px;color:#9ca3af;">Voter ID</div><div style="font-weight:600;">${c.voterId || '—'}</div></div>
+          <div><div style="font-size:10px;color:#9ca3af;">Ward Number</div><div style="font-weight:600;">Ward ${c.wardNumber || '—'}</div></div>
+          <div><div style="font-size:10px;color:#9ca3af;">Citizen ID</div><div style="font-weight:600;">${c.citizenId || '—'}</div></div>
+          <div><div style="font-size:10px;color:#9ca3af;">Submitted On</div><div style="font-weight:600;">${formatDate(c.createdAt)}</div></div>
+        </div>
+        <div style="border-left:3px solid #D32F2F;padding-left:10px;margin-bottom:12px;"><div style="font-weight:700;font-size:11px;color:#6b7280;letter-spacing:.05em;">COMPLAINT DETAILS</div></div>
+        <div style="margin-bottom:10px;"><div style="font-size:10px;color:#9ca3af;">Title</div><div style="font-weight:600;">${c.title || '—'}</div></div>
+        <div style="margin-bottom:10px;"><div style="font-size:10px;color:#9ca3af;margin-bottom:4px;">Description</div><div style="background:#f9fafb;border-radius:6px;padding:10px;line-height:1.7;white-space:pre-wrap;word-break:break-word;">${(c.description || '—').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div></div>
+        ${c.location?.address ? `<div style="margin-bottom:10px;"><div style="font-size:10px;color:#9ca3af;">Location</div><div style="font-weight:600;">${c.location.address}</div></div>` : ''}
+        <div style="border-left:3px solid #D32F2F;padding-left:10px;margin-bottom:12px;margin-top:20px;"><div style="font-weight:700;font-size:11px;color:#6b7280;letter-spacing:.05em;">ASSIGNMENT</div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:${c.remarks ? '10px' : '20px'};">
+          <div><div style="font-size:10px;color:#9ca3af;">Assigned Officer</div><div style="font-weight:600;">${c.assignedOfficerName || '—'}</div></div>
+          <div><div style="font-size:10px;color:#9ca3af;">Expected Completion</div><div style="font-weight:600;">${formatDate(c.expectedCompletionDate)}</div></div>
+        </div>
+        ${c.remarks ? `<div style="margin-bottom:20px;"><div style="font-size:10px;color:#9ca3af;">Officer Remarks</div><div style="background:#f9fafb;border-radius:6px;padding:10px;">${c.remarks}</div></div>` : ''}
+        ${c.images?.length ? `<div style="border-left:3px solid #D32F2F;padding-left:10px;margin-bottom:12px;"><div style="font-weight:700;font-size:11px;color:#6b7280;letter-spacing:.05em;">COMPLAINT PHOTOS</div></div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">${photoHtml(c.images)}</div>` : ''}
+        ${c.completionPhotos?.length ? `<div style="border-left:3px solid #D32F2F;padding-left:10px;margin-bottom:12px;"><div style="font-weight:700;font-size:11px;color:#6b7280;letter-spacing:.05em;">COMPLETION PHOTOS</div></div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">${photoHtml(c.completionPhotos)}</div>` : ''}
+        <div style="background:#f9fafb;padding:10px 16px;border-radius:6px;display:flex;justify-content:space-between;font-size:10px;color:#9ca3af;margin-top:10px;">
+          <span>Tamilaga Vettri Kazhagam — Vikramasingapuram</span><span>${c.complaintId}</span>
+        </div>
+      </div>`
+  }
+
+  const renderToCanvas = async (html) => {
+    const container = document.createElement('div')
+    container.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;background:#fff;font-family:"Noto Sans Tamil","Latha",Arial,sans-serif;font-size:13px;color:#222;'
+    container.innerHTML = html
+    document.body.appendChild(container)
+    try {
+      const fullHeight = container.scrollHeight
+      return await html2canvas(container, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: false,
+        logging: false,
+        height: fullHeight,
+        windowHeight: fullHeight,
+      })
+    } finally {
+      document.body.removeChild(container)
+    }
+  }
+
+  const downloadComplaintPDF = async (c) => {
+    const canvas = await renderToCanvas(buildComplaintHTML(c))
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' })
+    const W = 210, H = 297
+    const imgH = (canvas.height * W) / canvas.width
+    let remaining = imgH, drawn = 0
+    while (remaining > 0) {
+      const sliceH = Math.min(remaining, H)
+      const srcY = (drawn / imgH) * canvas.height
+      const sliceCanvas = document.createElement('canvas')
+      sliceCanvas.width = canvas.width
+      sliceCanvas.height = (sliceH / imgH) * canvas.height
+      sliceCanvas.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, sliceCanvas.height, 0, 0, canvas.width, sliceCanvas.height)
+      if (drawn > 0) doc.addPage()
+      doc.addImage(sliceCanvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, W, sliceH)
+      drawn += sliceH
+      remaining -= sliceH
+    }
+    doc.save(`${c.complaintId}.pdf`)
+  }
+
+  const downloadAllPDF = async () => {
+    if (!complaints.length) return
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' })
+    const W = 210, H = 297
+    let firstPage = true
+    for (const c of complaints) {
+      const canvas = await renderToCanvas(buildComplaintHTML(c))
+      const imgH = (canvas.height * W) / canvas.width
+      // Each complaint fits on one page — scale to fit A4 height if needed
+      const scale = imgH > H ? H / imgH : 1
+      const finalH = imgH * scale
+      const finalW = W * scale
+      const offsetX = (W - finalW) / 2
+      if (!firstPage) doc.addPage()
+      doc.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', offsetX, 0, finalW, finalH)
+      firstPage = false
+    }
+    doc.save(`complaints-all-${new Date().toISOString().slice(0,10)}.pdf`)
+  }
+
+
+
   return (
     <div className="space-y-5">
       <PageHeader
@@ -88,8 +201,10 @@ export default function AdminComplaints() {
         subtitle={`${total} total complaints`}
         actions={
           <div className="flex gap-2">
-            <button onClick={() => handleDownload('pdf')} className="px-3 py-2 text-xs font-semibold text-[#D32F2F] border border-[#D32F2F] rounded-xl hover:bg-red-50">PDF</button>
-            <button onClick={() => handleDownload('excel')} className="px-3 py-2 text-xs font-semibold text-white bg-[#D32F2F] rounded-xl hover:bg-red-700">Excel</button>
+            <button onClick={() => handleDownload('excel')} className="px-3 py-2 text-xs font-semibold text-[#D32F2F] border border-[#D32F2F] rounded-xl hover:bg-red-50">Excel</button>
+            <button onClick={downloadAllPDF} className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-white bg-[#D32F2F] rounded-xl hover:bg-red-700">
+              <Download size={13} /> Download All PDF
+            </button>
           </div>
         }
       />
@@ -141,10 +256,16 @@ export default function AdminComplaints() {
                     <td className="px-4 py-3 text-xs text-gray-600 whitespace-nowrap">{c.assignedOfficerName || '—'}</td>
                     <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">{formatDate(c.createdAt)}</td>
                     <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
-                      <button onClick={() => handleDelete(c._id)} disabled={deleting === c._id}
-                        className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-40">
-                        <Trash2 size={15} />
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => downloadComplaintPDF(c)}
+                          className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors" title="Download PDF">
+                          <Download size={15} />
+                        </button>
+                        <button onClick={() => handleDelete(c._id)} disabled={deleting === c._id}
+                          className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-40">
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -164,7 +285,16 @@ export default function AdminComplaints() {
       )}
 
       {/* Detail Modal - same as officer */}
-      <Modal isOpen={!!selected} onClose={() => setSelected(null)} title={`${selected?.complaintId} — ${selected?.title}`} size="xl">
+      <Modal isOpen={!!selected} onClose={() => setSelected(null)} title={`${selected?.complaintId} — ${selected?.title}`} size="xl"
+        actions={
+          selected && !detailLoading && (
+            <button onClick={() => downloadComplaintPDF(selected)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">
+              <Download size={13} /> Download PDF
+            </button>
+          )
+        }
+      >
         {selected && (
           detailLoading
             ? <div className="flex items-center justify-center py-16"><div className="w-8 h-8 border-4 border-gray-200 border-t-[#D32F2F] rounded-full animate-spin" /></div>
