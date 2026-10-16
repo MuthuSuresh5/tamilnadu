@@ -54,7 +54,7 @@ export function LoadingSpinner({ size = 'md', text }) {
   )
 }
 
-export function Modal({ isOpen, onClose, title, children, size = 'md' }) {
+export function Modal({ isOpen, onClose, title, children, size = 'md', actions }) {
   const widths = { sm: 'max-w-sm', md: 'max-w-lg', lg: 'max-w-2xl', xl: 'max-w-4xl' }
   if (!isOpen) return null
   return (
@@ -66,10 +66,13 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }) {
         className={`w-full ${widths[size]} bg-white rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto`}
       >
         <div className="flex items-center justify-between p-5 border-b border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
-          <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
-            <X size={18} />
-          </button>
+          <h3 className="text-lg font-semibold text-gray-800 truncate pr-4">{title}</h3>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {actions}
+            <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
+              <X size={18} />
+            </button>
+          </div>
         </div>
         <div className="p-5">{children}</div>
       </motion.div>

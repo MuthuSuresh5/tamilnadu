@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Search, Trash2, Camera } from 'lucide-react'
+import { Search, Trash2, Camera, Download } from 'lucide-react'
 import { StatusBadge, PriorityBadge, LoadingSpinner, EmptyState, PageHeader, Modal } from '../../components/shared/UI'
 import { complaintService, reportService } from '../../services'
 import { formatDate, categoryIcon, downloadBlob, resolveUrl } from '../../utils/helpers'
+import jsPDF from 'jspdf'
 
 const STATUSES = ['', 'submitted', 'accepted', 'processing', 'completed', 'rejected']
 const PRIORITIES = ['', 'low', 'medium', 'high', 'urgent']
@@ -81,6 +82,176 @@ export default function AdminComplaints() {
 
   const setFilter = (key, val) => setFilters(f => ({ ...f, [key]: val, page: 1 }))
 
+  const downloadComplaintPDF = async (c, e) => {
+    e.stopPropagation()
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+    const W = 210, margin = 15, contentW = W - margin * 2
+    let y = 0
+
+    // Header bar
+    doc.setFillColor(211, 47, 47)
+    doc.rect(0, 0, W, 28, 'F')
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(14)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Tamilaga Vettri Kazhagam', W / 2, 10, { align: 'center' })
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'normal')
+    doc.text('Vikramasingapuram — Complaint Report', W / 2, 17, { align: 'center' })
+    doc.setFontSize(8)
+    doc.text(`Generated: ${new Date().toLocaleString('en-IN')}`, W / 2, 23, { align: 'center' })
+    y = 35
+
+    // Complaint ID badge
+    doc.setFillColor(255, 245, 245)
+    doc.roundedRect(margin, y, contentW, 12, 2, 2, 'F')
+    doc.setTextColor(211, 47, 47)
+    doc.setFontSize(11)
+    doc.setFont('helvetica', 'bold')
+    doc.text(c.complaintId, margin + 4, y + 8)
+    doc.setTextColor(100, 100, 100)
+    doc.setFontSize(8)
+    doc.setFont('helvetica', 'normal')
+    doc.text(`Status: ${c.status?.toUpperCase()}   Priority: ${c.priority?.toUpperCase()}   Category: ${c.category}`, margin + contentW - 4, y + 8, { align: 'right' })
+    y += 18
+
+    // Section helper
+    const section = (title) => {
+      doc.setFillColor(245, 245, 245)
+      doc.rect(margin, y, contentW, 7, 'F')
+      doc.setTextColor(80, 80, 80)
+      doc.setFontSize(8)
+      doc.setFont('helvetica', 'bold')
+      doc.text(title.toUpperCase(), margin + 3, y + 5)
+      y += 10
+    }
+
+    const row = (label, value) => {
+      doc.setTextColor(120, 120, 120)
+      doc.setFontSize(8)
+      doc.setFont('helvetica', 'normal')
+      doc.text(label + ':', margin + 3, y)
+      doc.setTextColor(40, 40, 40)
+      doc.setFont('helvetica', 'bold')
+      const lines = doc.splitTextToSize(String(value || '—'), contentW / 2 - 5)
+      doc.text(lines, margin + 45, y)
+      y += lines.length * 5 + 1
+    }
+
+    const twoCol = (items) => {
+      const colW = contentW / 2
+      items.forEach(([label, value], i) => {
+        const x = margin + (i % 2) * colW
+        if (i % 2 === 0 && i > 0) y += 6
+        doc.setTextColor(120, 120, 120)
+        doc.setFontSize(7.5)
+        doc.setFont('helvetica', 'normal')
+        doc.text(label + ':', x + 3, y)
+        doc.setTextColor(40, 40, 40)
+        doc.setFont('helvetica', 'bold')
+        doc.text(String(value || '—'), x + 3, y + 4)
+      })
+      y += 10
+    }
+
+    // Citizen Info
+    section('Citizen Information')
+    twoCol([
+      ['Name', c.citizenName],
+      ['Phone', c.phone],
+      ['Voter ID', c.voterId || '—'],
+      ['Ward Number', `Ward ${c.wardNumber}`],
+      ['Citizen ID', c.citizenId || '—'],
+      ['Submitted', formatDate(c.createdAt)],
+    ])
+
+    // Complaint Info
+    section('Complaint Details')
+    row('Title', c.title)
+    y += 2
+    section('Description')
+    doc.setTextColor(40, 40, 40)
+    doc.setFontSize(8)
+    doc.setFont('helvetica', 'normal')
+    const descLines = doc.splitTextToSize(c.description || '—', contentW - 6)
+    doc.text(descLines, margin + 3, y)
+    y += descLines.length * 5 + 4
+
+    if (c.location?.address) {
+      section('Location')
+      doc.setTextColor(40, 40, 40)
+      doc.setFontSize(8)
+      doc.setFont('helvetica', 'normal')
+      doc.text(c.location.address, margin + 3, y)
+      y += 8
+    }
+
+    // Officer Info
+    if (c.assignedOfficerName) {
+      section('Assigned Officer')
+      twoCol([
+        ['Officer Name', c.assignedOfficerName],
+        ['Expected Completion', formatDate(c.expectedCompletionDate)],
+      ])
+    }
+
+    if (c.remarks) {
+      section('Officer Remarks')
+      doc.setTextColor(40, 40, 40)
+      doc.setFontSize(8)
+      doc.setFont('helvetica', 'normal')
+      const remarkLines = doc.splitTextToSize(c.remarks, contentW - 6)
+      doc.text(remarkLines, margin + 3, y)
+      y += remarkLines.length * 5 + 4
+    }
+
+    // Load and embed complaint photos
+    const embedImages = async (urls, title) => {
+      const validUrls = (urls || []).filter(Boolean)
+      if (!validUrls.length) return
+      if (y > 240) { doc.addPage(); y = 20 }
+      section(title)
+      for (const url of validUrls.slice(0, 4)) {
+        try {
+          const img = await new Promise((res, rej) => {
+            const i = new Image()
+            i.crossOrigin = 'anonymous'
+            i.onload = () => res(i)
+            i.onerror = rej
+            i.src = resolveUrl(url)
+          })
+          const canvas = document.createElement('canvas')
+          canvas.width = img.naturalWidth
+          canvas.height = img.naturalHeight
+          canvas.getContext('2d').drawImage(img, 0, 0)
+          const imgData = canvas.toDataURL('image/jpeg', 0.8)
+          const imgW = 55, imgH = (img.naturalHeight / img.naturalWidth) * imgW
+          if (y + imgH > 280) { doc.addPage(); y = 20 }
+          doc.addImage(imgData, 'JPEG', margin, y, imgW, Math.min(imgH, 50))
+          y += Math.min(imgH, 50) + 4
+        } catch { /* skip failed images */ }
+      }
+    }
+
+    await embedImages(c.images, 'Complaint Photos')
+    await embedImages(c.completionPhotos, 'Completion Photos')
+
+    // Footer on every page
+    const pageCount = doc.getNumberOfPages()
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i)
+      doc.setFillColor(245, 245, 245)
+      doc.rect(0, 287, W, 10, 'F')
+      doc.setTextColor(150, 150, 150)
+      doc.setFontSize(7)
+      doc.setFont('helvetica', 'normal')
+      doc.text('Tamilaga Vettri Kazhagam — Vikramasingapuram Complaint Management System', margin, 293)
+      doc.text(`Page ${i} of ${pageCount}`, W - margin, 293, { align: 'right' })
+    }
+
+    doc.save(`${c.complaintId}.pdf`)
+  }
+
   return (
     <div className="space-y-5">
       <PageHeader
@@ -141,10 +312,16 @@ export default function AdminComplaints() {
                     <td className="px-4 py-3 text-xs text-gray-600 whitespace-nowrap">{c.assignedOfficerName || '—'}</td>
                     <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">{formatDate(c.createdAt)}</td>
                     <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
-                      <button onClick={() => handleDelete(c._id)} disabled={deleting === c._id}
-                        className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-40">
-                        <Trash2 size={15} />
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button onClick={(e) => downloadComplaintPDF(c, e)}
+                          className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors" title="Download PDF">
+                          <Download size={15} />
+                        </button>
+                        <button onClick={() => handleDelete(c._id)} disabled={deleting === c._id}
+                          className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-40">
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -164,7 +341,16 @@ export default function AdminComplaints() {
       )}
 
       {/* Detail Modal - same as officer */}
-      <Modal isOpen={!!selected} onClose={() => setSelected(null)} title={`${selected?.complaintId} — ${selected?.title}`} size="xl">
+      <Modal isOpen={!!selected} onClose={() => setSelected(null)} title={`${selected?.complaintId} — ${selected?.title}`} size="xl"
+        actions={
+          selected && !detailLoading && (
+            <button onClick={(e) => downloadComplaintPDF(selected, e)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-600 border border-blue-200 rounded-xl hover:bg-blue-50 transition-all">
+              <Download size={13} /> Download PDF
+            </button>
+          )
+        }
+      >
         {selected && (
           detailLoading
             ? <div className="flex items-center justify-center py-16"><div className="w-8 h-8 border-4 border-gray-200 border-t-[#D32F2F] rounded-full animate-spin" /></div>
