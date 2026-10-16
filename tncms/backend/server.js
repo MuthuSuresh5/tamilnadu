@@ -1,5 +1,7 @@
 require('dotenv').config();
 const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
@@ -8,15 +10,14 @@ const connectDB = require('./config/db');
 const errorHandler = require('./middleware/errorHandler');
 const logger = require('./utils/logger');
 
-const isVercel = process.env.VERCEL === '1';
-
 // Handle uncaught exceptions before anything else
 process.on('uncaughtException', (err) => {
   logger.error(`Uncaught Exception: ${err.message}`);
-  if (!isVercel) process.exit(1);
+  if (process.env.VERCEL !== '1') process.exit(1);
 });
 
 const app = express();
+const server = http.createServer(app);
 
 // Allowed origins for CORS
 const allowedOrigins = [
@@ -26,6 +27,14 @@ const allowedOrigins = [
   'https://tamilnadu-ten.vercel.app',
   'http://localhost:5173',
 ].filter(Boolean);
+
+const io = new Server(server, {
+  cors: { 
+    origin: allowedOrigins,
+    methods: ['GET', 'POST'],
+    credentials: true
+  },
+});
 
 // Connect DB on every request (required for Vercel serverless)
 app.use(async (req, res, next) => {
@@ -64,7 +73,7 @@ app.use(cors({
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-if (!isVercel) app.use(morgan('dev'));
+if (process.env.NODE_ENV !== 'production') app.use(morgan('dev'));
 
 // Rate limiting
 const rateLimitConfig = (max) => ({
@@ -81,8 +90,11 @@ app.use('/api/auth/login', rateLimit({
   message: { success: false, message: 'Too many login attempts, please try again later' } 
 }));
 
+// Share io with controllers
+app.set('io', io);
+
 // Serve uploaded files (only for local - not used in Vercel)
-if (!isVercel) {
+if (process.env.VERCEL !== '1') {
   app.use('/uploads', express.static(require('path').join(__dirname, 'uploads')));
 }
 
@@ -128,33 +140,30 @@ app.use((req, res) => {
   });
 });
 
+// Socket.io
+io.on('connection', (socket) => {
+  logger.info(`Socket connected: ${socket.id}`);
+  socket.on('join_room', (room) => socket.join(room));
+  socket.on('join_ward', (wardNumber) => socket.join(`ward_${wardNumber}`));
+  socket.on('join_admin', () => socket.join('admin'));
+  socket.on('disconnect', () => logger.info(`Socket disconnected: ${socket.id}`));
+});
+
 // Global error handler (must be last)
 app.use(errorHandler);
+
+const PORT = process.env.PORT || 5000;
+
+// Only listen if not in serverless environment
+if (process.env.VERCEL !== '1') {
+  server.listen(PORT, () => logger.info(`Server running on port ${PORT} [${process.env.NODE_ENV}]`));
+}
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
   logger.error(`Unhandled Rejection: ${err.message || JSON.stringify(err)}`);
   logger.error(err.stack || err);
 });
-
-if (!isVercel) {
-  const http = require('http');
-  const { Server } = require('socket.io');
-  const server = http.createServer(app);
-  const io = new Server(server, {
-    cors: { origin: allowedOrigins, methods: ['GET', 'POST'], credentials: true },
-  });
-  app.set('io', io);
-  io.on('connection', (socket) => {
-    logger.info(`Socket connected: ${socket.id}`);
-    socket.on('join_room', (room) => socket.join(room));
-    socket.on('join_ward', (wardNumber) => socket.join(`ward_${wardNumber}`));
-    socket.on('join_admin', () => socket.join('admin'));
-    socket.on('disconnect', () => logger.info(`Socket disconnected: ${socket.id}`));
-  });
-  const PORT = process.env.PORT || 5000;
-  server.listen(PORT, () => logger.info(`Server running on port ${PORT} [${process.env.NODE_ENV}]`));
-}
 
 // Export for Vercel serverless
 module.exports = app;
