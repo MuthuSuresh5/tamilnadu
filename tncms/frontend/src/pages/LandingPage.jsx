@@ -215,12 +215,6 @@ export default function LandingPage() {
                   <MarqueeRow members={admins} accent="admin" dir={1} />
                 </div>
               )}
-              {officers.length > 0 && (
-                <div>
-                  <p className="text-xs font-bold text-blue-500 uppercase tracking-widest text-center mb-3">Ward Officers</p>
-                  <MarqueeRow members={officers} accent="officer" dir={-1} />
-                </div>
-              )}
             </div>
           </section>
         )
