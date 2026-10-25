@@ -91,8 +91,8 @@ exports.getPublicTeam = async (req, res) => {
   try {
     const members = await User.find(
       { role: { $in: ['admin', 'officer'] }, isActive: true },
-      'name role designation wardNumber phone profilePhoto'
-    ).sort({ role: 1, createdAt: 1 });
+      'name role designation wardNumber phone profilePhoto displayOrder'
+    ).sort({ displayOrder: 1, createdAt: 1 });
     res.json({ success: true, data: members });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

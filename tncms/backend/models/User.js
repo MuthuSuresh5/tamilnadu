@@ -18,6 +18,7 @@ const userSchema = new mongoose.Schema({
   refreshToken: { type: String, select: false },
   performanceScore: { type: Number, default: 0 },
   totalResolved: { type: Number, default: 0 },
+  displayOrder: { type: Number, default: 999 },
 }, { timestamps: true });
 
 userSchema.pre('save', async function () {
