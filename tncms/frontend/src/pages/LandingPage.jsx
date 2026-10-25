@@ -182,80 +182,88 @@ export default function LandingPage() {
         )
         const MarqueeRow = ({ members, accent, dir = 1 }) => {
           const repeated = [...members, ...members, ...members, ...members]
-          const controls = useAnimationControls()
           const trackRef = useRef(null)
           const isDragging = useRef(false)
           const startX = useRef(0)
-          const currentX = useRef(0)
+          const posX = useRef(0)
+          const rafId = useRef(null)
+          const animReq = useRef(null)
 
-          const getTrackWidth = () => trackRef.current?.scrollWidth || 1
-          const halfWidth = () => getTrackWidth() / 2
+          const halfWidth = () => (trackRef.current?.scrollWidth || 0) / 2
 
-          const getCurrentX = () => {
-            const el = trackRef.current
-            if (!el) return 0
-            return new DOMMatrix(window.getComputedStyle(el).transform).m41
-          }
-
-          const startAnim = (fromPx) => {
+          const wrap = (x) => {
             const hw = halfWidth()
-            const start = fromPx ?? (dir === 1 ? 0 : -hw)
-            const end = dir === 1 ? -hw : 0
-            const remaining = Math.abs(end - start)
-            const duration = (remaining / hw) * members.length * 8
-            controls.start({
-              x: [start, end],
-              transition: { duration, ease: 'linear', onComplete: () => startAnim(dir === 1 ? 0 : -hw) }
-            })
+            if (!hw) return x
+            if (x > 0) return x - hw
+            if (x < -hw) return x + hw
+            return x
           }
 
-          useEffect(() => { startAnim() }, [members.length])
+          const setPos = (x) => {
+            if (trackRef.current) trackRef.current.style.transform = `translateX(${x}px)`
+          }
+
+          // Pure JS animation loop — no framer-motion during auto-scroll
+          const startAutoScroll = () => {
+            if (animReq.current) cancelAnimationFrame(animReq.current)
+            const hw = halfWidth()
+            if (!hw) return
+            const speed = dir === 1 ? -0.5 : 0.5 // px per frame
+            const tick = () => {
+              if (isDragging.current) return
+              posX.current = wrap(posX.current + speed)
+              setPos(posX.current)
+              animReq.current = requestAnimationFrame(tick)
+            }
+            animReq.current = requestAnimationFrame(tick)
+          }
+
+          useEffect(() => {
+            // Wait for layout
+            const t = setTimeout(startAutoScroll, 100)
+            return () => { clearTimeout(t); if (animReq.current) cancelAnimationFrame(animReq.current) }
+          }, [members.length])
 
           const onPointerDown = (e) => {
             isDragging.current = true
             startX.current = e.clientX
-            currentX.current = getCurrentX()
-            controls.stop()
-            e.currentTarget.setPointerCapture(e.pointerId)
+            if (animReq.current) cancelAnimationFrame(animReq.current)
           }
 
           const onPointerMove = (e) => {
-            if (!isDragging.current || !trackRef.current) return
-            const multiplier = e.pointerType === 'touch' ? 8 : 1
+            if (!isDragging.current) return
+            const multiplier = e.pointerType === 'touch' ? 5 : 1
             const delta = (e.clientX - startX.current) * multiplier
             startX.current = e.clientX
-            const hw = halfWidth()
-            let newX = currentX.current + delta
-            if (newX > 0) newX -= hw
-            if (newX < -hw) newX += hw
-            currentX.current = newX
-            trackRef.current.style.transform = `translateX(${newX}px)`
+            posX.current = wrap(posX.current + delta)
+            if (rafId.current) cancelAnimationFrame(rafId.current)
+            rafId.current = requestAnimationFrame(() => {
+              setPos(posX.current)
+              rafId.current = null
+            })
           }
 
           const onPointerUp = () => {
             if (!isDragging.current) return
             isDragging.current = false
-            startAnim(getCurrentX())
+            startAutoScroll()
           }
 
           return (
             <div
-              className="overflow-hidden cursor-grab active:cursor-grabbing select-none touch-pan-x"
-              onMouseEnter={() => { if (!isDragging.current) { currentX.current = getCurrentX(); controls.stop() } }}
-              onMouseLeave={() => { if (!isDragging.current) startAnim(getCurrentX()) }}
+              className="overflow-hidden cursor-grab active:cursor-grabbing select-none"
               onPointerDown={onPointerDown}
               onPointerMove={onPointerMove}
               onPointerUp={onPointerUp}
               onPointerCancel={onPointerUp}
             >
-              <motion.div
+              <div
                 ref={trackRef}
                 className="flex gap-4"
-                animate={controls}
-                style={{ width: 'max-content' }}
+                style={{ width: 'max-content', willChange: 'transform', transform: 'translateX(0px)' }}
               >
                 {repeated.map((m, i) => <MemberCard key={i} m={m} accent={accent} />)}
-              </motion.div>
+              </div>
             </div>
           )
         }
