@@ -183,16 +183,49 @@ export default function LandingPage() {
         const MarqueeRow = ({ members, accent, dir = 1 }) => {
           const repeated = [...members, ...members, ...members, ...members]
           const controls = useAnimationControls()
-          useEffect(() => {
-            controls.start({ x: dir === 1 ? ['0%', '-50%'] : ['-50%', '0%'], transition: { duration: members.length * 8, repeat: Infinity, ease: 'linear', repeatType: 'loop' } })
-          }, [members.length])
+          const trackRef = useRef(null)
+          const isDragging = useRef(false)
+          const startX = useRef(0)
+          const scrollLeft = useRef(0)
+
+          const duration = members.length * 8
+          const startAnim = () => controls.start({
+            x: dir === 1 ? ['0%', '-50%'] : ['-50%', '0%'],
+            transition: { duration, repeat: Infinity, ease: 'linear', repeatType: 'loop' }
+          })
+
+          useEffect(() => { startAnim() }, [members.length])
+
+          const onPointerDown = (e) => {
+            isDragging.current = true
+            startX.current = e.clientX
+            const el = trackRef.current
+            scrollLeft.current = el ? parseFloat(el.style.transform?.match(/translateX\((.+)px\)/)?.[1] || 0) : 0
+            controls.stop()
+            e.currentTarget.setPointerCapture(e.pointerId)
+          }
+          const onPointerMove = (e) => {
+            if (!isDragging.current || !trackRef.current) return
+            const dx = e.clientX - startX.current
+            trackRef.current.style.transform = `translateX(${scrollLeft.current + dx}px)`
+          }
+          const onPointerUp = () => {
+            if (!isDragging.current) return
+            isDragging.current = false
+            startAnim()
+          }
+
           return (
             <div
-              className="overflow-hidden cursor-pointer"
-              onMouseEnter={() => controls.stop()}
-              onMouseLeave={() => controls.start({ x: dir === 1 ? ['0%', '-50%'] : ['-50%', '0%'], transition: { duration: members.length * 8, repeat: Infinity, ease: 'linear', repeatType: 'loop' } })}
+              className="overflow-hidden cursor-grab active:cursor-grabbing select-none"
+              onMouseEnter={() => { if (!isDragging.current) controls.stop() }}
+              onMouseLeave={() => { if (!isDragging.current) startAnim() }}
+              onPointerDown={onPointerDown}
+              onPointerMove={onPointerMove}
+              onPointerUp={onPointerUp}
             >
               <motion.div
+                ref={trackRef}
                 className="flex gap-4"
                 animate={controls}
                 style={{ width: 'max-content' }}
