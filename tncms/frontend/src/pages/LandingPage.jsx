@@ -232,7 +232,7 @@ export default function LandingPage() {
 
           const onPointerMove = (e) => {
             if (!isDragging.current) return
-            const multiplier = e.pointerType === 'touch' ? 5 : 1
+            const multiplier = e.pointerType === 'touch' ? 8 : 1
             const delta = (e.clientX - startX.current) * multiplier
             startX.current = e.clientX
             posX.current = wrap(posX.current + delta)
