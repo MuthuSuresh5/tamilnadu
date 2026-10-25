@@ -212,7 +212,7 @@ export default function LandingPage() {
           useEffect(() => { startAnim() }, [members.length])
 
           const onPointerDown = (e) => {
-            if (e.pointerType === 'mouse') return // mouse handled by hover
+            if (e.pointerType === 'mouse') return
             isDragging.current = true
             startX.current = e.clientX
             currentX.current = getCurrentX()
@@ -221,11 +221,13 @@ export default function LandingPage() {
 
           const onPointerMove = (e) => {
             if (!isDragging.current || !trackRef.current) return
-            const dx = (e.clientX - startX.current) * 2.5
+            const delta = (e.clientX - startX.current) * 2.5
+            startX.current = e.clientX  // update each frame so delta is per-frame
             const hw = halfWidth()
-            let newX = currentX.current + dx
+            let newX = currentX.current + delta
             if (newX > 0) newX -= hw
             if (newX < -hw) newX += hw
+            currentX.current = newX
             trackRef.current.style.transform = `translateX(${newX}px)`
           }
 
