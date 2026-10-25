@@ -212,17 +212,18 @@ export default function LandingPage() {
           useEffect(() => { startAnim() }, [members.length])
 
           const onPointerDown = (e) => {
-            if (e.pointerType === 'mouse') return
             isDragging.current = true
             startX.current = e.clientX
             currentX.current = getCurrentX()
             controls.stop()
+            e.currentTarget.setPointerCapture(e.pointerId)
           }
 
           const onPointerMove = (e) => {
             if (!isDragging.current || !trackRef.current) return
-            const delta = (e.clientX - startX.current) * 5
-            startX.current = e.clientX  // update each frame so delta is per-frame
+            const multiplier = e.pointerType === 'touch' ? 5 : 1
+            const delta = (e.clientX - startX.current) * multiplier
+            startX.current = e.clientX
             const hw = halfWidth()
             let newX = currentX.current + delta
             if (newX > 0) newX -= hw
@@ -240,8 +241,8 @@ export default function LandingPage() {
           return (
             <div
               className="overflow-hidden cursor-grab active:cursor-grabbing select-none touch-pan-x"
-              onMouseEnter={() => { currentX.current = getCurrentX(); controls.stop() }}
-              onMouseLeave={() => startAnim(getCurrentX())}
+              onMouseEnter={() => { if (!isDragging.current) { currentX.current = getCurrentX(); controls.stop() } }}
+              onMouseLeave={() => { if (!isDragging.current) startAnim(getCurrentX()) }}
               onPointerDown={onPointerDown}
               onPointerMove={onPointerMove}
               onPointerUp={onPointerUp}
