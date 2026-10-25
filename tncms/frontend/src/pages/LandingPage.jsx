@@ -186,40 +186,68 @@ export default function LandingPage() {
           const trackRef = useRef(null)
           const isDragging = useRef(false)
           const startX = useRef(0)
-          const scrollLeft = useRef(0)
+          const currentX = useRef(0)
+          const isMobile = useRef(false)
 
-          const duration = members.length * 8
-          const startAnim = () => controls.start({
-            x: dir === 1 ? ['0%', '-50%'] : ['-50%', '0%'],
-            transition: { duration, repeat: Infinity, ease: 'linear', repeatType: 'loop' }
-          })
+          const getTrackWidth = () => trackRef.current?.scrollWidth || 1
+          const halfWidth = () => getTrackWidth() / 2
+
+          const startAnim = (fromPx) => {
+            const hw = halfWidth()
+            const start = fromPx ?? (dir === 1 ? 0 : -hw)
+            const end = dir === 1 ? -hw : 0
+            const totalDist = hw
+            const remaining = dir === 1 ? Math.abs(end - start) : Math.abs(start - end)
+            const ratio = remaining / totalDist
+            const duration = members.length * 8 * ratio
+            controls.start({
+              x: [start, end],
+              transition: { duration, ease: 'linear', onComplete: () => startAnim(dir === 1 ? 0 : -hw) }
+            })
+          }
 
           useEffect(() => { startAnim() }, [members.length])
 
+          const getCurrentX = () => {
+            const el = trackRef.current
+            if (!el) return 0
+            const style = window.getComputedStyle(el)
+            const matrix = new DOMMatrix(style.transform)
+            return matrix.m41
+          }
+
           const onPointerDown = (e) => {
             isDragging.current = true
+            isMobile.current = e.pointerType === 'touch'
             startX.current = e.clientX
-            const el = trackRef.current
-            scrollLeft.current = el ? parseFloat(el.style.transform?.match(/translateX\((.+)px\)/)?.[1] || 0) : 0
+            currentX.current = getCurrentX()
             controls.stop()
             e.currentTarget.setPointerCapture(e.pointerId)
           }
+
           const onPointerMove = (e) => {
             if (!isDragging.current || !trackRef.current) return
-            const dx = e.clientX - startX.current
-            trackRef.current.style.transform = `translateX(${scrollLeft.current + dx}px)`
+            const multiplier = isMobile.current ? 2.5 : 1
+            const dx = (e.clientX - startX.current) * multiplier
+            const hw = halfWidth()
+            let newX = currentX.current + dx
+            // wrap within bounds
+            if (newX > 0) newX = newX - hw
+            if (newX < -hw) newX = newX + hw
+            trackRef.current.style.transform = `translateX(${newX}px)`
           }
-          const onPointerUp = () => {
+
+          const onPointerUp = (e) => {
             if (!isDragging.current) return
             isDragging.current = false
-            startAnim()
+            startAnim(getCurrentX())
           }
 
           return (
             <div
               className="overflow-hidden cursor-grab active:cursor-grabbing select-none"
-              onMouseEnter={() => { if (!isDragging.current) controls.stop() }}
-              onMouseLeave={() => { if (!isDragging.current) startAnim() }}
+              onMouseEnter={() => { if (!isDragging.current) { currentX.current = getCurrentX(); controls.stop() } }}
+              onMouseLeave={() => { if (!isDragging.current) startAnim(getCurrentX()) }}
               onPointerDown={onPointerDown}
               onPointerMove={onPointerMove}
               onPointerUp={onPointerUp}
