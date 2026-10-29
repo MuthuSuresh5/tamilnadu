@@ -3,7 +3,9 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { motion, useInView, animate, useAnimationControls } from 'framer-motion'
 import { useForm } from 'react-hook-form'
-import { Shield, MapPin, CheckCircle, Clock, Camera, Phone, User } from 'lucide-react'
+import { Shield, MapPin, CheckCircle, Clock, Camera, Phone, User, Download } from 'lucide-react'
+import { jsPDF } from 'jspdf'
+import html2canvas from 'html2canvas'
 import Navbar from '../components/shared/Navbar'
 import { publicService, complaintService } from '../services'
 import { categoryIcon, formatDate, resolveUrl } from '../utils/helpers'
@@ -29,6 +31,7 @@ export default function LandingPage() {
   const [team, setTeam] = useState([])
   const [submitting, setSubmitting] = useState(false)
   const [successData, setSuccessData] = useState(null)
+  const [submittedForm, setSubmittedForm] = useState(null)
   const [previews, setPreviews] = useState([])
   const [selectedFiles, setSelectedFiles] = useState([])
   const formRef = useRef(null)
@@ -55,6 +58,7 @@ export default function LandingPage() {
       }
       const res = await complaintService.submit(fd)
       setSuccessData(res.data.data)
+      setSubmittedForm({ ...data, images: previews })
       reset()
       setPreviews([])
       setSelectedFiles([])
@@ -62,6 +66,80 @@ export default function LandingPage() {
       alert(e.response?.data?.message || 'Submission failed')
     }
     setSubmitting(false)
+  }
+
+  const downloadSubmittedPDF = async () => {
+    if (!successData || !submittedForm) return
+    const c = {
+      ...submittedForm,
+      complaintId: successData.complaintId,
+      citizenId: successData.citizenId,
+      status: 'submitted',
+      priority: submittedForm.priority || 'low',
+      createdAt: new Date().toISOString(),
+      images: previews.length ? [] : [], // previews already cleared, skip photos
+    }
+    const statusColors = { submitted: '#1d4ed8', accepted: '#b45309', processing: '#c2410c', completed: '#15803d', rejected: '#b91c1c' }
+    const priorityColors = { low: '#6b7280', medium: '#1d4ed8', high: '#c2410c', urgent: '#b91c1c' }
+    const sc = statusColors[c.status] || '#6b7280'
+    const pc = priorityColors[c.priority] || '#6b7280'
+    const html = `
+      <div style="background:#D32F2F;padding:18px 24px;">
+        <div style="color:#fff;font-size:18px;font-weight:700;text-align:center;">Tamilaga Vettri Kazhagam</div>
+        <div style="color:#ffcdd2;font-size:11px;text-align:center;margin-top:3px;">Vikramasingapuram | Complaint Report</div>
+        <div style="color:#ffcdd2;font-size:10px;text-align:right;margin-top:4px;">Generated: ${new Date().toLocaleString('en-IN')}</div>
+      </div>
+      <div style="padding:20px 24px;">
+        <div style="background:#f9fafb;border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+          <span style="color:#D32F2F;font-weight:700;font-size:15px;">${c.complaintId}</span>
+          <span style="display:inline-flex;align-items:center;justify-content:center;background:${sc}22;color:${sc};padding:0 12px;height:22px;border-radius:20px;font-size:11px;font-weight:600;text-transform:capitalize;box-sizing:border-box;">${c.status}</span>
+          <span style="display:inline-flex;align-items:center;justify-content:center;background:${pc}22;color:${pc};padding:0 12px;height:22px;border-radius:20px;font-size:11px;font-weight:600;text-transform:capitalize;box-sizing:border-box;">${c.priority}</span>
+          <span style="color:#6b7280;font-size:11px;">${c.category || ''}</span>
+        </div>
+        <div style="border-left:3px solid #D32F2F;padding-left:10px;margin-bottom:12px;"><div style="font-weight:700;font-size:11px;color:#6b7280;letter-spacing:.05em;">CITIZEN INFORMATION</div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+          <div><div style="font-size:10px;color:#9ca3af;">Name</div><div style="font-weight:600;">${c.citizenName || '—'}</div></div>
+          <div><div style="font-size:10px;color:#9ca3af;">Phone</div><div style="font-weight:600;">${c.phone || '—'}</div></div>
+          <div><div style="font-size:10px;color:#9ca3af;">Voter ID</div><div style="font-weight:600;">${c.voterId || '—'}</div></div>
+          <div><div style="font-size:10px;color:#9ca3af;">Ward Number</div><div style="font-weight:600;">Ward ${c.wardNumber || '—'}</div></div>
+          <div><div style="font-size:10px;color:#9ca3af;">Citizen ID</div><div style="font-weight:600;">${c.citizenId || '—'}</div></div>
+          <div><div style="font-size:10px;color:#9ca3af;">Submitted On</div><div style="font-weight:600;">${formatDate(c.createdAt)}</div></div>
+        </div>
+        <div style="border-left:3px solid #D32F2F;padding-left:10px;margin-bottom:12px;"><div style="font-weight:700;font-size:11px;color:#6b7280;letter-spacing:.05em;">COMPLAINT DETAILS</div></div>
+        <div style="margin-bottom:10px;"><div style="font-size:10px;color:#9ca3af;">Title</div><div style="font-weight:600;">${c.title || '—'}</div></div>
+        <div style="margin-bottom:10px;"><div style="font-size:10px;color:#9ca3af;margin-bottom:4px;">Description</div><div style="background:#f9fafb;border-radius:6px;padding:10px;line-height:1.7;white-space:pre-wrap;word-break:break-word;">${(c.description || '—').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div></div>
+        ${c.locationAddress ? `<div style="margin-bottom:10px;"><div style="font-size:10px;color:#9ca3af;">Location</div><div style="font-weight:600;">${c.locationAddress}</div></div>` : ''}
+        <div style="background:#f9fafb;padding:10px 16px;border-radius:6px;display:flex;justify-content:space-between;font-size:10px;color:#9ca3af;margin-top:20px;">
+          <span>Tamilaga Vettri Kazhagam — Vikramasingapuram</span><span>${c.complaintId}</span>
+        </div>
+      </div>`
+    const container = document.createElement('div')
+    container.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;background:#fff;font-family:"Noto Sans Tamil","Latha",Arial,sans-serif;font-size:13px;color:#222;'
+    container.innerHTML = html
+    document.body.appendChild(container)
+    try {
+      const fullH = container.scrollHeight
+      const canvas = await html2canvas(container, { scale: 2, useCORS: true, allowTaint: false, logging: false, height: fullH, windowHeight: fullH })
+      const doc = new jsPDF({ unit: 'mm', format: 'a4' })
+      const W = 210, H = 297
+      const imgH = (canvas.height * W) / canvas.width
+      let drawn = 0, remaining = imgH
+      while (remaining > 0) {
+        const sliceH = Math.min(remaining, H)
+        const srcY = (drawn / imgH) * canvas.height
+        const sc2 = document.createElement('canvas')
+        sc2.width = canvas.width
+        sc2.height = (sliceH / imgH) * canvas.height
+        sc2.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, sc2.height, 0, 0, canvas.width, sc2.height)
+        if (drawn > 0) doc.addPage()
+        doc.addImage(sc2.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, W, sliceH)
+        drawn += sliceH
+        remaining -= sliceH
+      }
+      doc.save(`${c.complaintId}.pdf`)
+    } finally {
+      document.body.removeChild(container)
+    }
   }
 
   const handleFileChange = (e) => {
@@ -444,6 +522,10 @@ export default function LandingPage() {
                 <p className="text-lg font-bold text-yellow-700">{successData.citizenId}</p>
               </div>
             </div>
+            <button onClick={downloadSubmittedPDF}
+              className="w-full py-3 mb-3 flex items-center justify-center gap-2 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all">
+              <Download size={16} /> Download Complaint PDF
+            </button>
             <button onClick={() => setSuccessData(null)} className="w-full py-3 bg-[#D32F2F] text-white font-bold rounded-xl hover:bg-red-700 transition-all">
               Close
             </button>
