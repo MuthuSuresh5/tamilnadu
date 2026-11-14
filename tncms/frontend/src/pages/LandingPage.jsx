@@ -223,13 +223,44 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Team Marquee */}
+      {/* Team Section */}
       {team.length > 0 && (() => {
-        const admins = team.filter(m => m.role === 'admin')
+        const allAdmins = team.filter(m => m.role === 'admin').sort((a, b) => (a.displayOrder || 999) - (b.displayOrder || 999))
+        const superAdmins = team.filter(m => m.role === 'superadmin').sort((a, b) => (a.displayOrder || 999) - (b.displayOrder || 999))
+        const admins = allAdmins
         const officers = [...team.filter(m => m.role === 'officer')].sort((a, b) => (a.wardNumber || 0) - (b.wardNumber || 0))
+
+        const SuperAdminCard = ({ m }) => (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+            whileHover={{ scale: 1.03 }} transition={{ duration: 0.3 }}
+            className="flex-shrink-0 w-52 bg-white rounded-2xl border-2 border-[#F5C542] shadow-lg overflow-hidden"
+          >
+            {/* Photo with gradient overlay — vijay.png style */}
+            <div className="relative w-full h-44 overflow-hidden">
+              {m.profilePhoto
+                ? <img src={resolveUrl(m.profilePhoto)} alt={m.name} className="w-full h-full object-cover object-top" />
+                : <div className="w-full h-full bg-gradient-to-br from-[#D32F2F] to-red-900 flex items-center justify-center">
+                    <span className="text-5xl font-bold text-white/80">{m.name?.[0]}</span>
+                  </div>
+              }
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 px-3 py-2.5">
+                <span className="bg-[#F5C542] text-black text-[9px] font-extrabold px-2 py-0.5 rounded-full">SUPERADMIN</span>
+                <p className="text-white font-bold text-sm leading-tight mt-1 truncate">{m.name}</p>
+                <p className="text-white/75 text-[10px] truncate">{m.designation || 'Super Administrator'}</p>
+              </div>
+            </div>
+            {/* Phone */}
+            <div className="flex items-center justify-center gap-1.5 text-xs text-gray-400 py-2.5 border-t border-[#F5C542]/30">
+              <Phone size={10} className="text-[#D32F2F]" /> {m.phone}
+            </div>
+          </motion.div>
+        )
+
         const MemberCard = ({ m, accent }) => (
-          <div className={`flex-shrink-0 w-52 bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col items-center text-center gap-3`}>
-            <div className={`relative`}>
+          <div className="flex-shrink-0 w-52 bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col items-center text-center gap-3">
+            <div className="relative">
               <div className={`w-20 h-20 rounded-full ring-4 ${accent === 'admin' ? 'ring-[#D32F2F]/20' : 'ring-blue-100'} overflow-hidden shadow-md`}>
                 {m.profilePhoto
                   ? <img src={resolveUrl(m.profilePhoto)} alt={m.name} className="w-full h-full object-cover" />
@@ -258,6 +289,7 @@ export default function LandingPage() {
             </div>
           </div>
         )
+
         const MarqueeRow = ({ members, accent, dir = 1 }) => {
           const repeated = [...members, ...members, ...members, ...members]
           const trackRef = useRef(null)
@@ -268,7 +300,6 @@ export default function LandingPage() {
           const animReq = useRef(null)
 
           const halfWidth = () => (trackRef.current?.scrollWidth || 0) / 2
-
           const wrap = (x) => {
             const hw = halfWidth()
             if (!hw) return x
@@ -276,17 +307,12 @@ export default function LandingPage() {
             if (x < -hw) return x + hw
             return x
           }
-
-          const setPos = (x) => {
-            if (trackRef.current) trackRef.current.style.transform = `translateX(${x}px)`
-          }
-
-          // Pure JS animation loop — no framer-motion during auto-scroll
+          const setPos = (x) => { if (trackRef.current) trackRef.current.style.transform = `translateX(${x}px)` }
           const startAutoScroll = () => {
             if (animReq.current) cancelAnimationFrame(animReq.current)
             const hw = halfWidth()
             if (!hw) return
-            const speed = dir === 1 ? -0.5 : 0.5 // px per frame
+            const speed = dir === 1 ? -0.5 : 0.5
             const tick = () => {
               if (isDragging.current) return
               posX.current = wrap(posX.current + speed)
@@ -295,63 +321,53 @@ export default function LandingPage() {
             }
             animReq.current = requestAnimationFrame(tick)
           }
-
           useEffect(() => {
-            // Wait for layout
             const t = setTimeout(startAutoScroll, 100)
             return () => { clearTimeout(t); if (animReq.current) cancelAnimationFrame(animReq.current) }
           }, [members.length])
-
-          const onPointerDown = (e) => {
-            isDragging.current = true
-            startX.current = e.clientX
-            if (animReq.current) cancelAnimationFrame(animReq.current)
-          }
-
+          const onPointerDown = (e) => { isDragging.current = true; startX.current = e.clientX; if (animReq.current) cancelAnimationFrame(animReq.current) }
           const onPointerMove = (e) => {
             if (!isDragging.current) return
-            const multiplier = e.pointerType === 'touch' ? 8 : 1
-            const delta = (e.clientX - startX.current) * multiplier
+            const delta = (e.clientX - startX.current) * (e.pointerType === 'touch' ? 8 : 1)
             startX.current = e.clientX
             posX.current = wrap(posX.current + delta)
             if (rafId.current) cancelAnimationFrame(rafId.current)
-            rafId.current = requestAnimationFrame(() => {
-              setPos(posX.current)
-              rafId.current = null
-            })
+            rafId.current = requestAnimationFrame(() => { setPos(posX.current); rafId.current = null })
           }
-
-          const onPointerUp = () => {
-            if (!isDragging.current) return
-            isDragging.current = false
-            startAutoScroll()
-          }
-
+          const onPointerUp = () => { if (!isDragging.current) return; isDragging.current = false; startAutoScroll() }
           return (
-            <div
-              className="overflow-hidden cursor-grab active:cursor-grabbing select-none"
-              onPointerDown={onPointerDown}
-              onPointerMove={onPointerMove}
-              onPointerUp={onPointerUp}
-              onPointerCancel={onPointerUp}
-            >
-              <div
-                ref={trackRef}
-                className="flex gap-4"
-                style={{ width: 'max-content', willChange: 'transform', transform: 'translateX(0px)' }}
-              >
+            <div className="overflow-hidden cursor-grab active:cursor-grabbing select-none"
+              onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}>
+              <div ref={trackRef} className="flex gap-4" style={{ width: 'max-content', willChange: 'transform', transform: 'translateX(0px)' }}>
                 {repeated.map((m, i) => <MemberCard key={i} m={m} accent={accent} />)}
               </div>
             </div>
           )
         }
+
         return (
           <section className="py-14 bg-white">
             <div className="max-w-6xl mx-auto px-4 text-center mb-8">
               <h2 className="text-2xl font-bold text-gray-800">Meet Our Team</h2>
               <p className="text-sm text-gray-500 mt-1">Officials serving Tamilaga Vettri Kazhagam</p>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-10">
+              {/* Super Admins — static responsive grid, vijay.png style */}
+              {superAdmins.length > 0 && (
+                <div>
+                  <p className="text-xs font-bold text-[#F5C542] uppercase tracking-widest text-center mb-5 flex items-center justify-center gap-2">
+                    <span className="w-8 h-px bg-[#F5C542]/50" />
+                    ⭐ Super Administration
+                    <span className="w-8 h-px bg-[#F5C542]/50" />
+                  </p>
+                  <div className="flex justify-center">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 px-4">
+                      {superAdmins.map((m, i) => <SuperAdminCard key={m._id || i} m={m} />)}
+                    </div>
+                  </div>
+                </div>
+              )}
+              {/* Regular Admins — marquee */}
               {admins.length > 0 && (
                 <div>
                   <p className="text-xs font-bold text-[#D32F2F] uppercase tracking-widest text-center mb-3">Administration</p>

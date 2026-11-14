@@ -27,7 +27,7 @@ export default function Navbar({ onMenuToggle }) {
     navigate('/')
   }
 
-  const dashPath = user?.role === 'admin' ? '/admin' : user?.role === 'officer' ? '/officer' : '/citizen'
+  const dashPath = user?.role === 'admin' || user?.role === 'superadmin' ? '/admin' : user?.role === 'officer' ? '/officer' : '/citizen'
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">

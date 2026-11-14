@@ -43,7 +43,7 @@ export default function Sidebar({ isOpen, onClose }) {
   const navigate = useNavigate()
   const { user } = useSelector(s => s.auth)
 
-  const links = user?.role === 'admin' ? adminLinks : user?.role === 'officer' ? officerLinks : citizenLinks
+  const links = user?.role === 'admin' || user?.role === 'superadmin' ? adminLinks : user?.role === 'officer' ? officerLinks : citizenLinks
 
   const handleLogout = () => {
     dispatch(logout())
@@ -77,7 +77,7 @@ export default function Sidebar({ isOpen, onClose }) {
           <div className="overflow-hidden">
             <p className="text-sm font-semibold text-gray-800 truncate">{user?.name}</p>
             <p className="text-xs text-gray-500 truncate">
-              {user?.role === 'admin' && user?.designation
+              {(user?.role === 'admin' || user?.role === 'superadmin') && user?.designation
                 ? user.designation
                 : user?.citizenId || `Ward ${user?.wardNumber}`
               }

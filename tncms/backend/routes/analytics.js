@@ -8,11 +8,11 @@ router.get('/dashboard/public', getDashboardStats);
 router.get('/team/public', getPublicTeam);
 
 // Protected routes
-router.get('/dashboard', protect, authorize('admin', 'officer'), getDashboardStats);
-router.get('/category', protect, authorize('admin', 'officer'), getCategoryStats);
-router.get('/monthly', protect, authorize('admin', 'officer'), getMonthlyTrend);
-router.get('/heatmap', protect, authorize('admin', 'officer'), getWardHeatmap);
-router.get('/priority', protect, authorize('admin', 'officer'), getPriorityStats);
+router.get('/dashboard', protect, authorize('admin', 'superadmin', 'officer'), getDashboardStats);
+router.get('/category', protect, authorize('admin', 'superadmin', 'officer'), getCategoryStats);
+router.get('/monthly', protect, authorize('admin', 'superadmin', 'officer'), getMonthlyTrend);
+router.get('/heatmap', protect, authorize('admin', 'superadmin', 'officer'), getWardHeatmap);
+router.get('/priority', protect, authorize('admin', 'superadmin', 'officer'), getPriorityStats);
 router.get('/citizen', protect, getCitizenStats);
 
 module.exports = router;

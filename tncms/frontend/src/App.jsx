@@ -46,13 +46,14 @@ const Spinner = () => (
   </div>
 )
 
+const adminPath = (role) => (role === 'admin' || role === 'superadmin') ? '/admin' : role === 'officer' ? '/officer' : '/citizen'
+
 function ProtectedRoute({ children, roles }) {
   const { user, initialized } = useSelector(s => s.auth)
   if (!initialized) return <Spinner />
   if (!user) return <Navigate to="/login" replace />
   if (roles && !roles.includes(user.role)) {
-    const path = user.role === 'admin' ? '/admin' : user.role === 'officer' ? '/officer' : '/citizen'
-    return <Navigate to={path} replace />
+    return <Navigate to={adminPath(user.role)} replace />
   }
   return children
 }
@@ -60,10 +61,7 @@ function ProtectedRoute({ children, roles }) {
 function GuestRoute({ children }) {
   const { user, initialized } = useSelector(s => s.auth)
   if (!initialized) return <Spinner />
-  if (user) {
-    const path = user.role === 'admin' ? '/admin' : user.role === 'officer' ? '/officer' : '/citizen'
-    return <Navigate to={path} replace />
-  }
+  if (user) return <Navigate to={adminPath(user.role)} replace />
   return children
 }
 
@@ -115,8 +113,8 @@ export default function App() {
             <Route path="/officer/reports" element={<OfficerReports />} />
           </Route>
 
-          {/* Admin */}
-          <Route element={<ProtectedRoute roles={['admin']}><DashboardLayout /></ProtectedRoute>}>
+          {/* Admin + Superadmin */}
+          <Route element={<ProtectedRoute roles={['admin', 'superadmin']}><DashboardLayout /></ProtectedRoute>}>
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/complaints" element={<AdminComplaints />} />
             <Route path="/admin/officers" element={<OfficerManagement />} />

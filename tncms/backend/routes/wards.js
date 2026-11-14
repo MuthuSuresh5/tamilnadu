@@ -6,9 +6,9 @@ const { protect, authorize } = require('../middleware/auth');
 router.get('/', getWards);
 router.get('/stats/:wardNumber', getWardStats);
 router.get('/:id', getWard);
-router.post('/', protect, authorize('admin'), createWard);
-router.put('/assign-officer', protect, authorize('admin'), assignOfficer);
-router.put('/:id', protect, authorize('admin'), updateWard);
-router.delete('/:id', protect, authorize('admin'), deleteWard);
+router.post('/', protect, authorize('admin', 'superadmin'), createWard);
+router.put('/assign-officer', protect, authorize('admin', 'superadmin'), assignOfficer);
+router.put('/:id', protect, authorize('admin', 'superadmin'), updateWard);
+router.delete('/:id', protect, authorize('admin', 'superadmin'), deleteWard);
 
 module.exports = router;

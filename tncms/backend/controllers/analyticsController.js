@@ -90,7 +90,7 @@ exports.getCitizenStats = async (req, res) => {
 exports.getPublicTeam = async (req, res) => {
   try {
     const members = await User.find(
-      { role: { $in: ['admin', 'officer'] }, isActive: true },
+      { role: { $in: ['superadmin', 'admin', 'officer'] }, isActive: true },
       'name role designation wardNumber phone profilePhoto displayOrder'
     ).sort({ displayOrder: 1, createdAt: 1 });
     res.json({ success: true, data: members });

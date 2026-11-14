@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema({
   phone: { type: String, required: true, unique: true, trim: true },
   email: { type: String, sparse: true, lowercase: true, trim: true },
   password: { type: String, required: true, minlength: 6, select: false },
-  role: { type: String, enum: ['citizen', 'officer', 'admin'], default: 'citizen' },
+  role: { type: String, enum: ['citizen', 'officer', 'admin', 'superadmin'], default: 'citizen' },
   designation: { type: String, trim: true, default: '' },
   voterId: { type: String, trim: true, uppercase: true },
   wardNumber: { type: Number },

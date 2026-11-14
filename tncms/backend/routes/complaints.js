@@ -11,8 +11,8 @@ router.get('/feed', getCompletedFeed);
 router.get('/track/:id', trackComplaint);
 router.post('/', uploadComplaintImages, submitComplaint);
 router.get('/my', protect, getMyComplaints);
-router.get('/', protect, authorize('officer', 'admin'), getAllComplaints);
-router.put('/:id/status', protect, authorize('officer', 'admin'), uploadCompletionPhotos, updateComplaintStatus);
-router.delete('/:id', protect, authorize('admin'), deleteComplaint);
+router.get('/', protect, authorize('officer', 'admin', 'superadmin'), getAllComplaints);
+router.put('/:id/status', protect, authorize('officer', 'admin', 'superadmin'), uploadCompletionPhotos, updateComplaintStatus);
+router.delete('/:id', protect, authorize('admin', 'superadmin'), deleteComplaint);
 
 module.exports = router;
