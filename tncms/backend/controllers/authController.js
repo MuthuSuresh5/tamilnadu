@@ -9,17 +9,14 @@ const generateTokens = (id) => ({
 });
 
 const generateCitizenId = async () => {
-  // Find the highest existing citizenId and increment
-  const lastCitizen = await User.findOne({ role: 'citizen', citizenId: { $exists: true } })
-    .sort({ citizenId: -1 })
-    .select('citizenId')
-    .lean();
-  
-  if (lastCitizen?.citizenId) {
-    const lastNumber = parseInt(lastCitizen.citizenId.replace('CIT-', ''));
-    return `CIT-${lastNumber + 1}`;
-  }
-  return 'CIT-1001';
+  const citizens = await User.find({ role: 'citizen', citizenId: { $exists: true, $ne: null } })
+    .select('citizenId').lean();
+  if (!citizens.length) return 'CIT-1001';
+  const max = citizens.reduce((acc, u) => {
+    const n = parseInt(u.citizenId?.replace('CIT-', '') || '0')
+    return n > acc ? n : acc
+  }, 1000)
+  return `CIT-${max + 1}`;
 };
 
 exports.register = async (req, res) => {
@@ -34,7 +31,16 @@ exports.register = async (req, res) => {
     if (exists) return res.status(400).json({ success: false, message: 'Phone number already registered' });
 
     const citizenId = await generateCitizenId();
-    const user = await User.create({ name, phone, email, password, voterId, wardNumber, address, citizenId });
+    const user = await User.create({
+      name,
+      phone,
+      email: email || undefined,
+      password,
+      voterId: voterId || undefined,
+      wardNumber: wardNumber || undefined,
+      address: address || undefined,
+      citizenId,
+    });
     const { accessToken, refreshToken } = generateTokens(user._id);
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
