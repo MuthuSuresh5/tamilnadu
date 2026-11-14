@@ -246,11 +246,10 @@ export default function LandingPage() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 px-3 py-2.5">
                 <p className="text-white font-bold text-sm leading-tight truncate">{m.name}</p>
-                <p className="text-white/75 text-[10px] truncate">{m.designation || 'Super Administrator'}</p>
               </div>
             </div>
-            <div className="flex items-center justify-center gap-1.5 text-xs text-gray-400 py-2.5 border-t border-gray-100">
-              <Phone size={10} className="text-[#D32F2F]" /> {m.phone}
+            <div className="px-3 py-2.5 border-t border-[#F5C542]/30 text-center">
+              <p className="text-xs font-semibold text-[#D32F2F] truncate">{m.designation || 'Super Administrator'}</p>
             </div>
           </motion.div>
         )
