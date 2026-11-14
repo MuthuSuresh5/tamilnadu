@@ -286,56 +286,70 @@ export default function LandingPage() {
           </div>
         )
 
-        const MarqueeRow = ({ members, accent, dir = 1 }) => {
-          const repeated = [...members, ...members, ...members, ...members]
+        const ScrollRow = ({ members, accent }) => {
           const trackRef = useRef(null)
+          const animReq = useRef(null)
+          const posX = useRef(0)
           const isDragging = useRef(false)
           const startX = useRef(0)
-          const posX = useRef(0)
-          const rafId = useRef(null)
-          const animReq = useRef(null)
 
-          const halfWidth = () => (trackRef.current?.scrollWidth || 0) / 2
-          const wrap = (x) => {
-            const hw = halfWidth()
-            if (!hw) return x
-            if (x > 0) return x - hw
-            if (x < -hw) return x + hw
-            return x
-          }
-          const setPos = (x) => { if (trackRef.current) trackRef.current.style.transform = `translateX(${x}px)` }
-          const startAutoScroll = () => {
-            if (animReq.current) cancelAnimationFrame(animReq.current)
-            const hw = halfWidth()
-            if (!hw) return
-            const speed = dir === 1 ? -0.5 : 0.5
+          useEffect(() => {
+            const el = trackRef.current
+            if (!el) return
+            const containerWidth = el.parentElement.offsetWidth
+            const trackWidth = el.scrollWidth
+            const maxScroll = -(trackWidth - containerWidth)
+
             const tick = () => {
               if (isDragging.current) return
-              posX.current = wrap(posX.current + speed)
-              setPos(posX.current)
+              if (posX.current <= maxScroll) return
+              posX.current = Math.max(posX.current - 0.5, maxScroll)
+              el.style.transform = `translateX(${posX.current}px)`
+              animReq.current = requestAnimationFrame(tick)
+            }
+            const t = setTimeout(() => { animReq.current = requestAnimationFrame(tick) }, 100)
+            return () => { clearTimeout(t); if (animReq.current) cancelAnimationFrame(animReq.current) }
+          }, [members.length])
+
+          const onPointerDown = (e) => {
+            isDragging.current = true
+            startX.current = e.clientX
+            if (animReq.current) cancelAnimationFrame(animReq.current)
+          }
+          const onPointerMove = (e) => {
+            if (!isDragging.current) return
+            const el = trackRef.current
+            if (!el) return
+            const containerWidth = el.parentElement.offsetWidth
+            const maxScroll = -(el.scrollWidth - containerWidth)
+            posX.current = Math.min(0, Math.max(posX.current + (e.clientX - startX.current), maxScroll))
+            startX.current = e.clientX
+            el.style.transform = `translateX(${posX.current}px)`
+          }
+          const onPointerUp = () => {
+            if (!isDragging.current) return
+            isDragging.current = false
+            const el = trackRef.current
+            if (!el) return
+            const containerWidth = el.parentElement.offsetWidth
+            const trackWidth = el.scrollWidth
+            const maxScroll = -(trackWidth - containerWidth)
+            const tick = () => {
+              if (posX.current <= maxScroll) return
+              posX.current = Math.max(posX.current - 0.5, maxScroll)
+              el.style.transform = `translateX(${posX.current}px)`
               animReq.current = requestAnimationFrame(tick)
             }
             animReq.current = requestAnimationFrame(tick)
           }
-          useEffect(() => {
-            const t = setTimeout(startAutoScroll, 100)
-            return () => { clearTimeout(t); if (animReq.current) cancelAnimationFrame(animReq.current) }
-          }, [members.length])
-          const onPointerDown = (e) => { isDragging.current = true; startX.current = e.clientX; if (animReq.current) cancelAnimationFrame(animReq.current) }
-          const onPointerMove = (e) => {
-            if (!isDragging.current) return
-            const delta = (e.clientX - startX.current) * (e.pointerType === 'touch' ? 8 : 1)
-            startX.current = e.clientX
-            posX.current = wrap(posX.current + delta)
-            if (rafId.current) cancelAnimationFrame(rafId.current)
-            rafId.current = requestAnimationFrame(() => { setPos(posX.current); rafId.current = null })
-          }
-          const onPointerUp = () => { if (!isDragging.current) return; isDragging.current = false; startAutoScroll() }
+
           return (
-            <div className="overflow-hidden cursor-grab active:cursor-grabbing select-none"
-              onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}>
-              <div ref={trackRef} className="flex gap-4" style={{ width: 'max-content', willChange: 'transform', transform: 'translateX(0px)' }}>
-                {repeated.map((m, i) => <MemberCard key={i} m={m} accent={accent} />)}
+            <div className="overflow-hidden cursor-grab active:cursor-grabbing select-none px-4"
+              onPointerDown={onPointerDown} onPointerMove={onPointerMove}
+              onPointerUp={onPointerUp} onPointerCancel={onPointerUp}>
+              <div ref={trackRef} className="flex gap-4"
+                style={{ width: 'max-content', willChange: 'transform', transform: 'translateX(0px)' }}>
+                {members.map((m, i) => <MemberCard key={i} m={m} accent={accent} />)}
               </div>
             </div>
           )
@@ -360,7 +374,7 @@ export default function LandingPage() {
               {admins.length > 0 && (
                 <div>
                   <p className="text-xs font-bold text-[#D32F2F] uppercase tracking-widest text-center mb-3">Administration</p>
-                  <MarqueeRow members={admins} accent="admin" dir={1} />
+                  <ScrollRow members={admins} accent="admin" />
                 </div>
               )}
             </div>
