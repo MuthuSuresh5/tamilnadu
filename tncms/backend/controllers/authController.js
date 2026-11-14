@@ -9,18 +9,20 @@ const generateTokens = (id) => ({
 });
 
 const generateCitizenId = async () => {
-  const citizens = await User.find({ role: 'citizen', citizenId: { $exists: true, $ne: null } })
+  const citizens = await User.find({ citizenId: { $exists: true, $ne: null } })
     .select('citizenId').lean();
   const max = citizens.reduce((acc, u) => {
     const n = parseInt(u.citizenId?.replace('CIT-', '') || '0')
-    return n > acc ? n : acc
+    return isNaN(n) ? acc : Math.max(acc, n)
   }, 1000)
   return `CIT-${max + 1}`;
 };
 
-const createUserWithRetry = async (userData, retries = 5) => {
+const createUserWithRetry = async (userData, retries = 10) => {
   for (let i = 0; i < retries; i++) {
-    const citizenId = await generateCitizenId()
+    const citizenId = i === 0
+      ? await generateCitizenId()
+      : `CIT-${Date.now()}-${Math.floor(Math.random() * 1000)}`
     try {
       return await User.create({ ...userData, citizenId })
     } catch (e) {
