@@ -236,7 +236,6 @@ export default function LandingPage() {
             whileHover={{ scale: 1.03 }} transition={{ duration: 0.3 }}
             className="flex-shrink-0 w-52 bg-white rounded-2xl border-2 border-[#F5C542] shadow-lg overflow-hidden"
           >
-            {/* Photo with gradient overlay — vijay.png style */}
             <div className="relative w-full h-44 overflow-hidden">
               {m.profilePhoto
                 ? <img src={resolveUrl(m.profilePhoto)} alt={m.name} className="w-full h-full object-cover object-top" />
@@ -246,13 +245,11 @@ export default function LandingPage() {
               }
               <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 px-3 py-2.5">
-                <span className="bg-[#F5C542] text-black text-[9px] font-extrabold px-2 py-0.5 rounded-full">SUPERADMIN</span>
-                <p className="text-white font-bold text-sm leading-tight mt-1 truncate">{m.name}</p>
+                <p className="text-white font-bold text-sm leading-tight truncate">{m.name}</p>
                 <p className="text-white/75 text-[10px] truncate">{m.designation || 'Super Administrator'}</p>
               </div>
             </div>
-            {/* Phone */}
-            <div className="flex items-center justify-center gap-1.5 text-xs text-gray-400 py-2.5 border-t border-[#F5C542]/30">
+            <div className="flex items-center justify-center gap-1.5 text-xs text-gray-400 py-2.5 border-t border-gray-100">
               <Phone size={10} className="text-[#D32F2F]" /> {m.phone}
             </div>
           </motion.div>
@@ -354,16 +351,9 @@ export default function LandingPage() {
             <div className="space-y-10">
               {/* Super Admins — static responsive grid, vijay.png style */}
               {superAdmins.length > 0 && (
-                <div>
-                  <p className="text-xs font-bold text-[#F5C542] uppercase tracking-widest text-center mb-5 flex items-center justify-center gap-2">
-                    <span className="w-8 h-px bg-[#F5C542]/50" />
-                    ⭐ Super Administration
-                    <span className="w-8 h-px bg-[#F5C542]/50" />
-                  </p>
-                  <div className="flex justify-center">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 px-4">
-                      {superAdmins.map((m, i) => <SuperAdminCard key={m._id || i} m={m} />)}
-                    </div>
+                <div className="flex justify-center">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 px-4">
+                    {superAdmins.map((m, i) => <SuperAdminCard key={m._id || i} m={m} />)}
                   </div>
                 </div>
               )}
