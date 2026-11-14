@@ -234,22 +234,22 @@ export default function LandingPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
             whileHover={{ scale: 1.03 }} transition={{ duration: 0.3 }}
-            className="flex-shrink-0 w-52 bg-white rounded-2xl border-2 border-[#F5C542] shadow-lg overflow-hidden"
+            className="flex-shrink-0 w-[100px] sm:w-[150px] lg:w-52 bg-white rounded-2xl border-2 border-[#F5C542] shadow-lg overflow-hidden"
           >
-            <div className="relative w-full h-44 overflow-hidden">
+            <div className="relative w-full h-28 sm:h-36 lg:h-44 overflow-hidden">
               {m.profilePhoto
                 ? <img src={resolveUrl(m.profilePhoto)} alt={m.name} className="w-full h-full object-cover object-top" />
                 : <div className="w-full h-full bg-gradient-to-br from-[#D32F2F] to-red-900 flex items-center justify-center">
-                    <span className="text-5xl font-bold text-white/80">{m.name?.[0]}</span>
+                    <span className="text-3xl font-bold text-white/80">{m.name?.[0]}</span>
                   </div>
               }
               <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 px-3 py-2.5">
-                <p className="text-white font-bold text-sm leading-tight truncate">{m.name}</p>
+              <div className="absolute bottom-0 left-0 right-0 px-2 py-2">
+                <p className="text-white font-bold text-[10px] sm:text-xs leading-tight break-words">{m.name}</p>
               </div>
             </div>
-            <div className="px-3 py-2.5 border-t border-[#F5C542]/30 text-center">
-              <p className="text-xs font-semibold text-[#D32F2F] truncate">{m.designation || 'Super Administrator'}</p>
+            <div className="px-2 py-2 border-t border-[#F5C542]/30 text-center">
+              <p className="text-[9px] sm:text-xs font-semibold text-[#D32F2F] break-words leading-tight">{m.designation || 'Administrator'}</p>
             </div>
           </motion.div>
         )
@@ -400,8 +400,8 @@ export default function LandingPage() {
             <div className="space-y-10">
               {/* Super Admins — static responsive grid, vijay.png style */}
               {superAdmins.length > 0 && (
-                <div className="flex justify-center">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 px-4">
+                <div className="flex justify-center px-4">
+                  <div className="flex gap-3 justify-center flex-wrap">
                     {superAdmins.map((m, i) => <SuperAdminCard key={m._id || i} m={m} />)}
                   </div>
                 </div>
