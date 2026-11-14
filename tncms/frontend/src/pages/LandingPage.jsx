@@ -288,30 +288,29 @@ export default function LandingPage() {
 
         const ScrollRow = ({ members, accent }) => {
           const trackRef = useRef(null)
+          const containerRef = useRef(null)
           const animReq = useRef(null)
           const posX = useRef(0)
           const isDragging = useRef(false)
-          const startX = useRef(0)
           const lastX = useRef(0)
 
           const getMaxScroll = () => {
             const el = trackRef.current
-            if (!el) return 0
-            return -(el.scrollWidth - el.parentElement.offsetWidth)
+            const container = containerRef.current
+            if (!el || !container) return 0
+            return -(el.scrollWidth - container.offsetWidth)
           }
 
           const clamp = (x) => Math.min(0, Math.max(x, getMaxScroll()))
 
           const startAutoScroll = () => {
             if (animReq.current) cancelAnimationFrame(animReq.current)
-            const el = trackRef.current
-            if (!el) return
             const tick = () => {
               if (isDragging.current) return
               const max = getMaxScroll()
               if (posX.current <= max) return
               posX.current = Math.max(posX.current - 0.5, max)
-              el.style.transform = `translateX(${posX.current}px)`
+              if (trackRef.current) trackRef.current.style.transform = `translateX(${posX.current}px)`
               animReq.current = requestAnimationFrame(tick)
             }
             animReq.current = requestAnimationFrame(tick)
@@ -322,32 +321,68 @@ export default function LandingPage() {
             return () => { clearTimeout(t); if (animReq.current) cancelAnimationFrame(animReq.current) }
           }, [members.length])
 
-          const onPointerDown = (e) => {
+          useEffect(() => {
+            const container = containerRef.current
+            if (!container) return
+
+            const onTouchStart = (e) => {
+              isDragging.current = true
+              lastX.current = e.touches[0].clientX
+              if (animReq.current) cancelAnimationFrame(animReq.current)
+            }
+            const onTouchMove = (e) => {
+              if (!isDragging.current) return
+              e.preventDefault()
+              const x = e.touches[0].clientX
+              const delta = x - lastX.current
+              lastX.current = x
+              posX.current = clamp(posX.current + delta)
+              if (trackRef.current) trackRef.current.style.transform = `translateX(${posX.current}px)`
+            }
+            const onTouchEnd = () => {
+              isDragging.current = false
+              startAutoScroll()
+            }
+
+            container.addEventListener('touchstart', onTouchStart, { passive: true })
+            container.addEventListener('touchmove', onTouchMove, { passive: false })
+            container.addEventListener('touchend', onTouchEnd)
+            container.addEventListener('touchcancel', onTouchEnd)
+            return () => {
+              container.removeEventListener('touchstart', onTouchStart)
+              container.removeEventListener('touchmove', onTouchMove)
+              container.removeEventListener('touchend', onTouchEnd)
+              container.removeEventListener('touchcancel', onTouchEnd)
+            }
+          }, [members.length])
+
+          const onMouseDown = (e) => {
             isDragging.current = true
-            startX.current = e.clientX
             lastX.current = e.clientX
             if (animReq.current) cancelAnimationFrame(animReq.current)
-            e.currentTarget.setPointerCapture(e.pointerId)
           }
-
-          const onPointerMove = (e) => {
+          const onMouseMove = (e) => {
             if (!isDragging.current) return
             const delta = e.clientX - lastX.current
             lastX.current = e.clientX
             posX.current = clamp(posX.current + delta)
             if (trackRef.current) trackRef.current.style.transform = `translateX(${posX.current}px)`
           }
-
-          const onPointerUp = () => {
+          const onMouseUp = () => {
             if (!isDragging.current) return
             isDragging.current = false
             startAutoScroll()
           }
 
           return (
-            <div className="overflow-hidden cursor-grab active:cursor-grabbing select-none px-4"
-              onPointerDown={onPointerDown} onPointerMove={onPointerMove}
-              onPointerUp={onPointerUp} onPointerCancel={onPointerUp}>
+            <div
+              ref={containerRef}
+              className="overflow-hidden cursor-grab active:cursor-grabbing select-none px-4"
+              onMouseDown={onMouseDown}
+              onMouseMove={onMouseMove}
+              onMouseUp={onMouseUp}
+              onMouseLeave={onMouseUp}
+            >
               <div ref={trackRef} className="flex gap-4"
                 style={{ width: 'max-content', willChange: 'transform', transform: 'translateX(0px)' }}>
                 {members.map((m, i) => <MemberCard key={i} m={m} accent={accent} />)}
