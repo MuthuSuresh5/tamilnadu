@@ -11,12 +11,23 @@ const generateTokens = (id) => ({
 const generateCitizenId = async () => {
   const citizens = await User.find({ role: 'citizen', citizenId: { $exists: true, $ne: null } })
     .select('citizenId').lean();
-  if (!citizens.length) return 'CIT-1001';
   const max = citizens.reduce((acc, u) => {
     const n = parseInt(u.citizenId?.replace('CIT-', '') || '0')
     return n > acc ? n : acc
   }, 1000)
   return `CIT-${max + 1}`;
+};
+
+const createUserWithRetry = async (userData, retries = 5) => {
+  for (let i = 0; i < retries; i++) {
+    const citizenId = await generateCitizenId()
+    try {
+      return await User.create({ ...userData, citizenId })
+    } catch (e) {
+      if (e.code === 11000 && e.message.includes('citizenId') && i < retries - 1) continue
+      throw e
+    }
+  }
 };
 
 exports.register = async (req, res) => {
@@ -30,8 +41,7 @@ exports.register = async (req, res) => {
     const exists = await User.findOne({ phone });
     if (exists) return res.status(400).json({ success: false, message: 'Phone number already registered' });
 
-    const citizenId = await generateCitizenId();
-    const user = await User.create({
+    const user = await createUserWithRetry({
       name,
       phone,
       email: email || undefined,
@@ -39,7 +49,6 @@ exports.register = async (req, res) => {
       voterId: voterId || undefined,
       wardNumber: wardNumber || undefined,
       address: address || undefined,
-      citizenId,
     });
     const { accessToken, refreshToken } = generateTokens(user._id);
     user.refreshToken = refreshToken;
