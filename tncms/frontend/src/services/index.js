@@ -4,7 +4,8 @@ import axios from 'axios'
 // Separate unauthenticated client — never triggers refresh/redirect
 const publicApi = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api',
-  timeout: 15000,
+  timeout: 60000,
+  withCredentials: false,
 })
 
 export const publicService = {
