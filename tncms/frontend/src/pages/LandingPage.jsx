@@ -29,6 +29,8 @@ export default function LandingPage() {
   const [stats, setStats] = useState({ total: 0, completed: 0, totalWards: 0, totalOfficers: 0 })
   const [feed, setFeed] = useState([])
   const [team, setTeam] = useState([])
+  const [teamLoading, setTeamLoading] = useState(true)
+  const [feedLoading, setFeedLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [successData, setSuccessData] = useState(null)
   const [submittedForm, setSubmittedForm] = useState(null)
@@ -53,8 +55,8 @@ export default function LandingPage() {
 
   useEffect(() => {
     publicService.getDashboardStats().then(r => setStats(r.data.data)).catch(() => {})
-    publicService.getCompletedFeed().then(r => setFeed(r.data.data || [])).catch(() => {})
-    publicService.getPublicTeam().then(r => setTeam(r.data.data || [])).catch(() => {})
+    publicService.getCompletedFeed().then(r => setFeed(r.data.data || [])).catch(() => {}).finally(() => setFeedLoading(false))
+    publicService.getPublicTeam().then(r => setTeam(r.data.data || [])).catch(() => {}).finally(() => setTeamLoading(false))
   }, [])
 
   const onSubmit = async (data) => {
@@ -238,181 +240,145 @@ export default function LandingPage() {
       </section>
 
       {/* Team Section */}
-      {team.length > 0 && (() => {
-        const allAdmins = team.filter(m => m.role === 'admin').sort((a, b) => (a.displayOrder || 999) - (b.displayOrder || 999))
-        const superAdmins = team.filter(m => m.role === 'superadmin').sort((a, b) => (a.displayOrder || 999) - (b.displayOrder || 999))
-        const admins = allAdmins
-        const officers = [...team.filter(m => m.role === 'officer')].sort((a, b) => (a.wardNumber || 0) - (b.wardNumber || 0))
-
-        const SuperAdminCard = ({ m }) => (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-            whileHover={{ scale: 1.03 }} transition={{ duration: 0.3 }}
-            className="flex-shrink-0 w-[100px] sm:w-[150px] lg:w-52 bg-white rounded-2xl border-2 border-[#F5C542] shadow-lg overflow-hidden"
-          >
-            <div className="relative w-full h-28 sm:h-36 lg:h-44 overflow-hidden">
-              {m.profilePhoto
-                ? <img src={resolveUrl(m.profilePhoto)} alt={m.name} className="w-full h-full object-cover object-top" />
-                : <div className="w-full h-full bg-gradient-to-br from-[#D32F2F] to-red-900 flex items-center justify-center">
-                    <span className="text-3xl font-bold text-white/80">{m.name?.[0]}</span>
+      <section className="py-14 bg-white">
+        <div className="max-w-6xl mx-auto px-4 text-center mb-8">
+          <h2 className="text-2xl font-bold text-gray-800">Meet Our Team</h2>
+          <p className="text-sm text-gray-500 mt-1">Officials serving Tamilaga Vettri Kazhagam</p>
+        </div>
+        {teamLoading ? (
+          <div className="space-y-10">
+            <div className="flex justify-center gap-3 px-4 flex-wrap">
+              {[1,2,3].map(i => (
+                <div key={i} className="w-[100px] sm:w-[150px] lg:w-52 rounded-2xl overflow-hidden border-2 border-gray-100 animate-pulse">
+                  <div className="w-full h-28 sm:h-36 lg:h-44 bg-gray-200" />
+                  <div className="px-2 py-3 space-y-1.5">
+                    <div className="h-3 bg-gray-200 rounded-full w-3/4 mx-auto" />
+                    <div className="h-2.5 bg-gray-100 rounded-full w-1/2 mx-auto" />
                   </div>
-              }
-              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 px-2 py-2">
-                <p className="text-white font-bold text-[10px] sm:text-xs leading-tight break-words">{m.name}</p>
-              </div>
-            </div>
-            <div className="px-2 py-2 border-t border-[#F5C542]/30 text-center">
-              <p className="text-[9px] sm:text-xs font-semibold text-[#D32F2F] break-words leading-tight">{m.designation || 'Administrator'}</p>
-            </div>
-          </motion.div>
-        )
-
-        const MemberCard = ({ m, accent }) => (
-          <div className="flex-shrink-0 w-52 bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col items-center text-center gap-3">
-            <div className="relative">
-              <div className={`w-20 h-20 rounded-full ring-4 ${accent === 'admin' ? 'ring-[#D32F2F]/20' : 'ring-blue-100'} overflow-hidden shadow-md`}>
-                {m.profilePhoto
-                  ? <img src={resolveUrl(m.profilePhoto)} alt={m.name} className="w-full h-full object-cover" />
-                  : <div className={`w-full h-full flex items-center justify-center text-2xl font-bold text-white ${accent === 'admin' ? 'bg-gradient-to-br from-[#D32F2F] to-red-400' : 'bg-gradient-to-br from-blue-500 to-blue-400'}`}>
-                      {m.name?.[0]}
-                    </div>
-                }
-              </div>
-              <span className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white flex items-center justify-center ${accent === 'admin' ? 'bg-[#D32F2F]' : 'bg-blue-500'}`}>
-                <Shield size={9} className="text-white" />
-              </span>
+                </div>
+              ))}
             </div>
             <div>
-              <p className="font-bold text-gray-800 text-sm truncate w-40">{m.name}</p>
-              <p className={`text-xs font-semibold mt-0.5 ${accent === 'admin' ? 'text-[#D32F2F]' : 'text-blue-500'}`}>
-                {m.designation || (m.role === 'admin' ? 'Admin' : 'Ward Officer')}
-              </p>
-              {m.role === 'officer' && m.wardNumber && (
-                <span className="inline-flex items-center gap-1 text-xs bg-blue-50 text-blue-600 font-semibold px-2 py-0.5 rounded-full mt-1">
-                  <MapPin size={9} /> Ward {m.wardNumber}
-                </span>
-              )}
-            </div>
-            <div className="flex items-center gap-1 text-xs text-gray-400 border-t border-gray-50 pt-2 w-full justify-center">
-              <Phone size={10} /> {m.phone}
+              <div className="h-3 bg-gray-200 rounded-full w-24 mx-auto mb-4 animate-pulse" />
+              <div className="flex gap-4 px-4 overflow-hidden">
+                {[1,2,3,4].map(i => (
+                  <div key={i} className="flex-shrink-0 w-52 rounded-2xl border border-gray-100 p-5 animate-pulse">
+                    <div className="w-20 h-20 rounded-full bg-gray-200 mx-auto mb-3" />
+                    <div className="h-3 bg-gray-200 rounded-full w-3/4 mx-auto mb-2" />
+                    <div className="h-2.5 bg-gray-100 rounded-full w-1/2 mx-auto" />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-        )
+        ) : (() => {
+          const superAdmins = team.filter(m => m.role === 'superadmin').sort((a, b) => (a.displayOrder || 999) - (b.displayOrder || 999))
+          const admins = team.filter(m => m.role === 'admin').sort((a, b) => (a.displayOrder || 999) - (b.displayOrder || 999))
 
-        const ScrollRow = ({ members, accent }) => {
-          const trackRef = useRef(null)
-          const containerRef = useRef(null)
-          const animReq = useRef(null)
-          const posX = useRef(0)
-          const isDragging = useRef(false)
-          const lastX = useRef(0)
-
-          const getMaxScroll = () => {
-            const el = trackRef.current
-            const container = containerRef.current
-            if (!el || !container) return 0
-            return -(el.scrollWidth - container.offsetWidth)
-          }
-
-          const clamp = (x) => Math.min(0, Math.max(x, getMaxScroll()))
-
-          const startAutoScroll = () => {
-            if (animReq.current) cancelAnimationFrame(animReq.current)
-            const tick = () => {
-              if (isDragging.current) return
-              const max = getMaxScroll()
-              if (posX.current <= max) return
-              posX.current = Math.max(posX.current - 0.5, max)
-              if (trackRef.current) trackRef.current.style.transform = `translateX(${posX.current}px)`
-              animReq.current = requestAnimationFrame(tick)
-            }
-            animReq.current = requestAnimationFrame(tick)
-          }
-
-          useEffect(() => {
-            const t = setTimeout(startAutoScroll, 100)
-            return () => { clearTimeout(t); if (animReq.current) cancelAnimationFrame(animReq.current) }
-          }, [members.length])
-
-          useEffect(() => {
-            const container = containerRef.current
-            if (!container) return
-
-            const onTouchStart = (e) => {
-              isDragging.current = true
-              lastX.current = e.touches[0].clientX
-              if (animReq.current) cancelAnimationFrame(animReq.current)
-            }
-            const onTouchMove = (e) => {
-              if (!isDragging.current) return
-              e.preventDefault()
-              const x = e.touches[0].clientX
-              const delta = x - lastX.current
-              lastX.current = x
-              posX.current = clamp(posX.current + delta)
-              if (trackRef.current) trackRef.current.style.transform = `translateX(${posX.current}px)`
-            }
-            const onTouchEnd = () => {
-              isDragging.current = false
-              startAutoScroll()
-            }
-
-            container.addEventListener('touchstart', onTouchStart, { passive: true })
-            container.addEventListener('touchmove', onTouchMove, { passive: false })
-            container.addEventListener('touchend', onTouchEnd)
-            container.addEventListener('touchcancel', onTouchEnd)
-            return () => {
-              container.removeEventListener('touchstart', onTouchStart)
-              container.removeEventListener('touchmove', onTouchMove)
-              container.removeEventListener('touchend', onTouchEnd)
-              container.removeEventListener('touchcancel', onTouchEnd)
-            }
-          }, [members.length])
-
-          const onMouseDown = (e) => {
-            isDragging.current = true
-            lastX.current = e.clientX
-            if (animReq.current) cancelAnimationFrame(animReq.current)
-          }
-          const onMouseMove = (e) => {
-            if (!isDragging.current) return
-            const delta = e.clientX - lastX.current
-            lastX.current = e.clientX
-            posX.current = clamp(posX.current + delta)
-            if (trackRef.current) trackRef.current.style.transform = `translateX(${posX.current}px)`
-          }
-          const onMouseUp = () => {
-            if (!isDragging.current) return
-            isDragging.current = false
-            startAutoScroll()
-          }
-
-          return (
-            <div
-              ref={containerRef}
-              className="overflow-hidden cursor-grab active:cursor-grabbing select-none px-4"
-              onMouseDown={onMouseDown}
-              onMouseMove={onMouseMove}
-              onMouseUp={onMouseUp}
-              onMouseLeave={onMouseUp}
+          const SuperAdminCard = ({ m }) => (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+              whileHover={{ scale: 1.03 }} transition={{ duration: 0.3 }}
+              className="flex-shrink-0 w-[100px] sm:w-[150px] lg:w-52 bg-white rounded-2xl border-2 border-[#F5C542] shadow-lg overflow-hidden"
             >
-              <div ref={trackRef} className="flex gap-4"
-                style={{ width: 'max-content', willChange: 'transform', transform: 'translateX(0px)' }}>
-                {members.map((m, i) => <MemberCard key={i} m={m} accent={accent} />)}
+              <div className="relative w-full h-28 sm:h-36 lg:h-44 overflow-hidden">
+                {m.profilePhoto
+                  ? <img src={resolveUrl(m.profilePhoto)} alt={m.name} className="w-full h-full object-cover object-top" />
+                  : <div className="w-full h-full bg-gradient-to-br from-[#D32F2F] to-red-900 flex items-center justify-center">
+                      <span className="text-3xl font-bold text-white/80">{m.name?.[0]}</span>
+                    </div>
+                }
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 px-2 py-2">
+                  <p className="text-white font-bold text-[10px] sm:text-xs leading-tight break-words">{m.name}</p>
+                </div>
+              </div>
+              <div className="px-2 py-2 border-t border-[#F5C542]/30 text-center">
+                <p className="text-[9px] sm:text-xs font-semibold text-[#D32F2F] break-words leading-tight">{m.designation || 'Administrator'}</p>
+              </div>
+            </motion.div>
+          )
+
+          const MemberCard = ({ m }) => (
+            <div className="flex-shrink-0 w-52 bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col items-center text-center gap-3">
+              <div className="relative">
+                <div className="w-20 h-20 rounded-full ring-4 ring-[#D32F2F]/20 overflow-hidden shadow-md">
+                  {m.profilePhoto
+                    ? <img src={resolveUrl(m.profilePhoto)} alt={m.name} className="w-full h-full object-cover" />
+                    : <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-white bg-gradient-to-br from-[#D32F2F] to-red-400">{m.name?.[0]}</div>
+                  }
+                </div>
+                <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white bg-[#D32F2F] flex items-center justify-center">
+                  <Shield size={9} className="text-white" />
+                </span>
+              </div>
+              <div>
+                <p className="font-bold text-gray-800 text-sm truncate w-40">{m.name}</p>
+                <p className="text-xs font-semibold mt-0.5 text-[#D32F2F]">{m.designation || 'Admin'}</p>
+              </div>
+              <div className="flex items-center gap-1 text-xs text-gray-400 border-t border-gray-50 pt-2 w-full justify-center">
+                <Phone size={10} /> {m.phone}
               </div>
             </div>
           )
-        }
 
-        return (
-          <section className="py-14 bg-white">
-            <div className="max-w-6xl mx-auto px-4 text-center mb-8">
-              <h2 className="text-2xl font-bold text-gray-800">Meet Our Team</h2>
-              <p className="text-sm text-gray-500 mt-1">Officials serving Tamilaga Vettri Kazhagam</p>
-            </div>
+          const ScrollRow = ({ members }) => {
+            const trackRef = useRef(null)
+            const containerRef = useRef(null)
+            const animReq = useRef(null)
+            const posX = useRef(0)
+            const isDragging = useRef(false)
+            const lastX = useRef(0)
+            const getMaxScroll = () => {
+              const el = trackRef.current, container = containerRef.current
+              if (!el || !container) return 0
+              return -(el.scrollWidth - container.offsetWidth)
+            }
+            const clamp = (x) => Math.min(0, Math.max(x, getMaxScroll()))
+            const startAutoScroll = () => {
+              if (animReq.current) cancelAnimationFrame(animReq.current)
+              const tick = () => {
+                if (isDragging.current) return
+                const max = getMaxScroll()
+                if (posX.current <= max) return
+                posX.current = Math.max(posX.current - 0.5, max)
+                if (trackRef.current) trackRef.current.style.transform = `translateX(${posX.current}px)`
+                animReq.current = requestAnimationFrame(tick)
+              }
+              animReq.current = requestAnimationFrame(tick)
+            }
+            useEffect(() => {
+              const t = setTimeout(startAutoScroll, 100)
+              return () => { clearTimeout(t); if (animReq.current) cancelAnimationFrame(animReq.current) }
+            }, [members.length])
+            useEffect(() => {
+              const container = containerRef.current
+              if (!container) return
+              const onTouchStart = (e) => { isDragging.current = true; lastX.current = e.touches[0].clientX; if (animReq.current) cancelAnimationFrame(animReq.current) }
+              const onTouchMove = (e) => { if (!isDragging.current) return; e.preventDefault(); const x = e.touches[0].clientX; const delta = x - lastX.current; lastX.current = x; posX.current = clamp(posX.current + delta); if (trackRef.current) trackRef.current.style.transform = `translateX(${posX.current}px)` }
+              const onTouchEnd = () => { isDragging.current = false; startAutoScroll() }
+              container.addEventListener('touchstart', onTouchStart, { passive: true })
+              container.addEventListener('touchmove', onTouchMove, { passive: false })
+              container.addEventListener('touchend', onTouchEnd)
+              container.addEventListener('touchcancel', onTouchEnd)
+              return () => { container.removeEventListener('touchstart', onTouchStart); container.removeEventListener('touchmove', onTouchMove); container.removeEventListener('touchend', onTouchEnd); container.removeEventListener('touchcancel', onTouchEnd) }
+            }, [members.length])
+            return (
+              <div ref={containerRef} className="overflow-hidden cursor-grab active:cursor-grabbing select-none px-4"
+                onMouseDown={e => { isDragging.current = true; lastX.current = e.clientX; if (animReq.current) cancelAnimationFrame(animReq.current) }}
+                onMouseMove={e => { if (!isDragging.current) return; const delta = e.clientX - lastX.current; lastX.current = e.clientX; posX.current = clamp(posX.current + delta); if (trackRef.current) trackRef.current.style.transform = `translateX(${posX.current}px)` }}
+                onMouseUp={() => { if (!isDragging.current) return; isDragging.current = false; startAutoScroll() }}
+                onMouseLeave={() => { if (!isDragging.current) return; isDragging.current = false; startAutoScroll() }}
+              >
+                <div ref={trackRef} className="flex gap-4" style={{ width: 'max-content', willChange: 'transform', transform: 'translateX(0px)' }}>
+                  {members.map((m, i) => <MemberCard key={i} m={m} />)}
+                </div>
+              </div>
+            )
+          }
+
+          return (
             <div className="space-y-10">
-              {/* Super Admins — static responsive grid, vijay.png style */}
               {superAdmins.length > 0 && (
                 <div className="flex justify-center px-4">
                   <div className="flex gap-3 justify-center flex-wrap">
@@ -420,17 +386,16 @@ export default function LandingPage() {
                   </div>
                 </div>
               )}
-              {/* Regular Admins — marquee */}
               {admins.length > 0 && (
                 <div>
                   <p className="text-xs font-bold text-[#D32F2F] uppercase tracking-widest text-center mb-3">Administration</p>
-                  <ScrollRow members={admins} accent="admin" />
+                  <ScrollRow members={admins} />
                 </div>
               )}
             </div>
-          </section>
-        )
-      })()}
+          )
+        })()}
+      </section>
 
       {/* Resolved Complaints Ticker */}
       {feed.length > 0 && (
