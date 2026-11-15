@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Outlet } from 'react-router-dom'
+import { Link, Outlet } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { Menu } from 'lucide-react'
 import Sidebar from '../shared/Sidebar'
@@ -20,8 +20,10 @@ export default function DashboardLayout() {
           <button onClick={() => setSidebarOpen(true)} className="p-1.5 hover:bg-gray-100 rounded-lg">
             <Menu size={20} />
           </button>
-          <img src="/vijay.png" alt="CM" className="w-8 h-8 rounded-full object-cover border-2 border-[#D32F2F]" />
-          <span className="font-semibold text-gray-700 text-sm">TVK Citizen Portal</span>
+          <Link to="/" className="flex items-center gap-3">
+            <img src="/vijay.png" alt="CM" className="w-8 h-8 rounded-full object-cover border-2 border-[#D32F2F]" />
+            <span className="font-semibold text-gray-700 text-sm">Tamilaga Vettri Kazhagam</span>
+          </Link>
         </div>
         <main className="flex-1 p-4 md:p-6 overflow-auto">
           <ErrorBoundary>

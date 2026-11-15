@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Bell, Menu, X, ChevronDown, User, LogOut, Settings } from 'lucide-react'
+import { Bell, Menu, X, ChevronDown, User, LogOut, Settings, Home, FileText } from 'lucide-react'
 import { logout } from '../../store/slices/authSlice'
 
 export default function Navbar({ onMenuToggle }) {
@@ -28,6 +28,11 @@ export default function Navbar({ onMenuToggle }) {
   }
 
   const dashPath = user?.role === 'admin' || user?.role === 'superadmin' ? '/admin' : user?.role === 'officer' ? '/officer' : '/citizen'
+  const complaintsPath = user?.role === 'admin' || user?.role === 'superadmin'
+    ? '/admin/complaints'
+    : user?.role === 'officer'
+      ? '/officer/complaints'
+      : '/citizen/complaints'
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
@@ -92,6 +97,12 @@ export default function Navbar({ onMenuToggle }) {
                       exit={{ opacity: 0, y: -8 }}
                       className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden"
                     >
+                      <Link to={dashPath} onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">
+                        <Home size={15} /> {t('nav.dashboard')}
+                      </Link>
+                      <Link to={complaintsPath} onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">
+                        <FileText size={15} /> {t('nav.complaints')}
+                      </Link>
                       <Link to="/profile" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">
                         <User size={15} /> {t('nav.profile')}
                       </Link>

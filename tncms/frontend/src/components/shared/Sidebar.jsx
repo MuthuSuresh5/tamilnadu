@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -55,13 +55,13 @@ export default function Sidebar({ isOpen, onClose }) {
     <div className="flex flex-col h-full bg-white border-r border-gray-200">
       {/* Header */}
       <div className="flex items-center justify-between p-5 border-b border-gray-100">
-        <div className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2">
           <img src="/vijay.png" alt="CM" className="w-8 h-8 rounded-full object-cover border-2 border-[#D32F2F] flex-shrink-0" />
           <div>
             <p className="text-xs font-bold text-[#D32F2F]">Tamilaga Vettri Kazhagam</p>
             <p className="text-[9px] text-gray-400">Vikramasingapuram</p>
           </div>
-        </div>
+        </Link>
         {onClose && (
           <button onClick={onClose} className="lg:hidden p-1 hover:bg-gray-100 rounded"><X size={16} /></button>
         )}
