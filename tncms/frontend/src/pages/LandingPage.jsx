@@ -635,8 +635,16 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
-        <div className="max-w-6xl mx-auto px-4 mt-8 pt-6 border-t border-gray-800 text-center text-xs">
-          © {new Date().getFullYear()} Tamilaga Vettri Kazhagam. All rights reserved.
+        <div className="max-w-6xl mx-auto px-4 mt-8 pt-6 border-t border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
+          <span>© {new Date().getFullYear()} Tamilaga Vettri Kazhagam. All rights reserved.</span>
+          <a
+            href="https://decode-studio-xzq1.vercel.app/"
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-1 text-gray-500 hover:text-white transition-colors"
+          >
+            Powered by <span className="font-semibold text-[#F5C542] hover:text-yellow-300">Decode Studio</span>
+          </a>
         </div>
       </footer>
     </div>
