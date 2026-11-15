@@ -1,4 +1,5 @@
 const Complaint = require('../models/Complaint');
+const ComplaintCounter = require('../models/ComplaintCounter');
 const Ward = require('../models/Ward');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
@@ -43,12 +44,22 @@ const sentimentScore = (text) => {
   return Math.max(-1, Math.min(1, score));
 };
 
+const getNextComplaintId = async () => {
+  const year = new Date().getFullYear();
+  const counter = await ComplaintCounter.findOneAndUpdate(
+    { year },
+    { $inc: { sequence: 1 } },
+    { new: true, upsert: true, setDefaultsOnInsert: true }
+  );
+
+  return `TVK${year}${String(counter.sequence).padStart(2, '0')}`;
+};
+
 exports.submitComplaint = async (req, res) => {
   try {
     const { citizenName, phone, voterId, wardNumber, category, title, description, locationAddress, lat, lng, priority } = req.body;
 
-    const count = await Complaint.countDocuments();
-    const complaintId = `TVK-CMP-${24000 + count + 1}`;
+    const complaintId = await getNextComplaintId();
 
     // AI features
     const aiCategory = autoCategory(title, description);
@@ -69,7 +80,7 @@ exports.submitComplaint = async (req, res) => {
 
     // Get citizen ID
     const citizen = await User.findOne({ phone });
-    const citizenId = citizen?.citizenId || `CIT-${1001 + count}`;
+    const citizenId = citizen?.citizenId || `CIT-${1001 + await Complaint.countDocuments()}`;
 
     const complaint = await Complaint.create({
       complaintId,
