@@ -12,7 +12,7 @@ const upload = multer({
     destination: (req, file, cb) => cb(null, dir),
     filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`)
   })
-}).array('images', 5)
+}).array('images', 2)
 
 app.post('/test-upload', (req, res, next) => {
   upload(req, res, (err) => {

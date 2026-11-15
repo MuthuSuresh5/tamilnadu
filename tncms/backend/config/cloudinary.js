@@ -95,12 +95,12 @@ const wrapMulter = (upload, folder) => (req, res, next) => {
 };
 
 const uploadComplaintImages = wrapMulter(
-  multer({ storage: createStorage('complaints'), limits: { fileSize: 5 * 1024 * 1024 } }).array('images', 5),
+  multer({ storage: createStorage('complaints'), limits: { fileSize: 5 * 1024 * 1024 } }).array('images', 2),
   'complaints'
 );
 
 const uploadCompletionPhotos = wrapMulter(
-  multer({ storage: createStorage('completions'), limits: { fileSize: 5 * 1024 * 1024 } }).array('completionPhotos', 5),
+  multer({ storage: createStorage('completions'), limits: { fileSize: 5 * 1024 * 1024 } }).array('completionPhotos', 2),
   'completions'
 );
 

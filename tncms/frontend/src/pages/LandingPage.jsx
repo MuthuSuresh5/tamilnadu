@@ -159,7 +159,10 @@ export default function LandingPage() {
   }
 
   const handleFileChange = (e) => {
-    const files = Array.from(e.target.files)
+    const files = Array.from(e.target.files).slice(0, 2)
+    if (e.target.files.length > 2) {
+      setErrorData('You can upload a maximum of 2 photos.')
+    }
     setSelectedFiles(files)
     setPreviews(files.map(f => URL.createObjectURL(f)))
   }
@@ -520,7 +523,7 @@ export default function LandingPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1.5">{t('form.photo')} (max 5)</label>
+              <label className="block text-xs font-semibold text-gray-600 mb-1.5">{t('form.photo')} (max 2)</label>
               <label className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-[#D32F2F]/50 hover:bg-red-50/30 transition-all">
                 <Camera size={22} className="text-gray-400 mb-1" />
                 <p className="text-xs text-gray-400">Click to upload images</p>
