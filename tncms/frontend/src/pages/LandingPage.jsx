@@ -631,7 +631,7 @@ export default function LandingPage() {
             <p className="text-white font-semibold mb-3">Contact</p>
             <div className="space-y-2 text-sm">
               <p>📞 1800-425-1213 (Toll Free)</p>
-              <p>✉️ complaints@tn.gov.in</p>
+              <p>✉️ vkpuramtvk@gmail.com</p>
             </div>
           </div>
         </div>
