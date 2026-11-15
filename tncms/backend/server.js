@@ -29,8 +29,8 @@ const isAllowedOrigin = (origin) => {
   if (!origin) return true;
   const normalized = origin.replace(/\/$/, '');
   if (allowedOrigins.some(o => o?.replace(/\/$/, '') === normalized)) return true;
-  // Allow all Vercel preview deployments for this project
-  if (/^https:\/\/tn-complaint-.*\.vercel\.app$/.test(origin)) return true;
+  // Allow all Vercel preview deployments
+  if (/^https:\/\/.*\.vercel\.app$/.test(origin)) return true;
   return false;
 };
 
@@ -61,8 +61,8 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 if (!isVercel) app.use(morgan('dev'));
 
 // Rate limiting
