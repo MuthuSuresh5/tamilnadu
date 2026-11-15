@@ -32,11 +32,24 @@ export default function LandingPage() {
   const [submitting, setSubmitting] = useState(false)
   const [successData, setSuccessData] = useState(null)
   const [submittedForm, setSubmittedForm] = useState(null)
+  const [errorData, setErrorData] = useState(null)
   const [previews, setPreviews] = useState([])
   const [selectedFiles, setSelectedFiles] = useState([])
   const formRef = useRef(null)
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm()
+
+  const onInvalid = () => {
+    const errorList = [
+      errors.citizenName?.message,
+      errors.phone?.message,
+      errors.wardNumber?.message,
+      errors.category?.message,
+      errors.title?.message,
+      errors.description?.message,
+    ].filter(Boolean)
+    setErrorData(errorList.join('\n'))
+  }
 
   useEffect(() => {
     publicService.getDashboardStats().then(r => setStats(r.data.data)).catch(() => {})
@@ -63,7 +76,8 @@ export default function LandingPage() {
       setPreviews([])
       setSelectedFiles([])
     } catch (e) {
-      alert(e.response?.data?.message || 'Submission failed')
+      const msg = e.response?.data?.message || e.message || 'Submission failed. Please try again.'
+      setErrorData(msg)
     }
     setSubmitting(false)
   }
@@ -476,19 +490,21 @@ export default function LandingPage() {
 
           <motion.form
             initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-            onSubmit={handleSubmit(onSubmit)}
+            onSubmit={handleSubmit(onSubmit, onInvalid)}
             className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 space-y-5"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1.5">{t('form.name')} *</label>
-                <input {...register('citizenName', { required: true })} placeholder={t('form.namePlaceholder')}
+                <input {...register('citizenName', { required: 'Name is required' })} placeholder={t('form.namePlaceholder')}
                   className={`w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[#D32F2F]/30 ${errors.citizenName ? 'border-red-400' : 'border-gray-200'}`} />
+                {errors.citizenName && <p className="text-red-500 text-xs mt-1">{errors.citizenName.message}</p>}
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1.5">{t('form.phone')} *</label>
-                <input {...register('phone', { required: true, pattern: /^[6-9]\d{9}$/ })} placeholder={t('form.phonePlaceholder')} type="tel"
+                <input {...register('phone', { required: 'Phone number is required', pattern: { value: /^[6-9]\d{9}$/, message: 'Enter a valid 10-digit mobile number starting with 6-9' } })} placeholder={t('form.phonePlaceholder')} type="tel"
                   className={`w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[#D32F2F]/30 ${errors.phone ? 'border-red-400' : 'border-gray-200'}`} />
+                {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>}
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1.5">{t('form.voterId')}</label>
@@ -497,16 +513,18 @@ export default function LandingPage() {
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1.5">{t('form.ward')} *</label>
-                <input {...register('wardNumber', { required: true, min: 1 })} type="number" placeholder="1-200"
+                <input {...register('wardNumber', { required: 'Ward number is required', min: { value: 1, message: 'Ward number must be at least 1' } })} type="number" placeholder="1-200"
                   className={`w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[#D32F2F]/30 ${errors.wardNumber ? 'border-red-400' : 'border-gray-200'}`} />
+                {errors.wardNumber && <p className="text-red-500 text-xs mt-1">{errors.wardNumber.message}</p>}
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1.5">{t('form.category')} *</label>
-                <select {...register('category', { required: true })}
+                <select {...register('category', { required: 'Please select a category' })}
                   className={`w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[#D32F2F]/30 bg-white ${errors.category ? 'border-red-400' : 'border-gray-200'}`}>
                   <option value="">Select Category</option>
                   {CATEGORIES.map(c => <option key={c} value={c}>{categoryIcon(c)} {t(`categories.${c}`)}</option>)}
                 </select>
+                {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category.message}</p>}
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1.5">{t('form.priority')}</label>
@@ -518,14 +536,16 @@ export default function LandingPage() {
 
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1.5">{t('form.title')} *</label>
-              <input {...register('title', { required: true, minLength: 5 })} placeholder="Brief complaint title"
+              <input {...register('title', { required: 'Title is required', minLength: { value: 5, message: 'Title must be at least 5 characters' } })} placeholder="Brief complaint title"
                 className={`w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[#D32F2F]/30 ${errors.title ? 'border-red-400' : 'border-gray-200'}`} />
+              {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>}
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1.5">{t('form.description')} *</label>
-              <textarea {...register('description', { required: true, minLength: 20 })} rows={4} placeholder={t('form.descriptionPlaceholder')}
+              <textarea {...register('description', { required: 'Description is required', minLength: { value: 20, message: 'Description must be at least 20 characters' } })} rows={4} placeholder={t('form.descriptionPlaceholder')}
                 className={`w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[#D32F2F]/30 resize-none ${errors.description ? 'border-red-400' : 'border-gray-200'}`} />
+              {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description.message}</p>}
             </div>
 
             <div>
@@ -557,6 +577,43 @@ export default function LandingPage() {
       </section>
 
 
+
+      {/* Error Modal */}
+      {errorData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full"
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-gray-800">Please fix the following</h3>
+                <p className="text-xs text-gray-500">Fill all required fields correctly</p>
+              </div>
+            </div>
+            <div className="bg-red-50 border border-red-100 rounded-xl p-4 mb-5 space-y-2">
+              {errorData.split('\n').map((msg, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 flex-shrink-0" />
+                  <p className="text-sm text-red-700">{msg}</p>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() => setErrorData(null)}
+              className="w-full py-2.5 bg-[#D32F2F] text-white font-bold rounded-xl hover:bg-red-700 transition-all text-sm"
+            >
+              OK, Fix It
+            </button>
+          </motion.div>
+        </div>
+      )}
 
       {/* Success Modal */}
       {successData && (
