@@ -93,12 +93,15 @@ export default function LandingPage() {
       status: 'submitted',
       priority: submittedForm.priority || 'low',
       createdAt: new Date().toISOString(),
-      images: previews.length ? [] : [], // previews already cleared, skip photos
+      images: submittedForm.images || [],
     }
     const statusColors = { submitted: '#1d4ed8', accepted: '#b45309', processing: '#c2410c', completed: '#15803d', rejected: '#b91c1c' }
     const priorityColors = { low: '#6b7280', medium: '#1d4ed8', high: '#c2410c', urgent: '#b91c1c' }
     const sc = statusColors[c.status] || '#6b7280'
     const pc = priorityColors[c.priority] || '#6b7280'
+    const photoHtml = c.images.map(src =>
+      `<img src="${resolveUrl(src)}" style="width:320px;height:220px;object-fit:cover;border-radius:6px;border:1px solid #e5e7eb;" />`
+    ).join('')
     const html = `
       <div style="background:#D32F2F;padding:18px 24px;">
         <div style="color:#fff;font-size:18px;font-weight:700;text-align:center;">Tamilaga Vettri Kazhagam</div>
@@ -125,6 +128,7 @@ export default function LandingPage() {
         <div style="margin-bottom:10px;"><div style="font-size:10px;color:#9ca3af;">Title</div><div style="font-weight:600;">${c.title || '—'}</div></div>
         <div style="margin-bottom:10px;"><div style="font-size:10px;color:#9ca3af;margin-bottom:4px;">Description</div><div style="background:#f9fafb;border-radius:6px;padding:10px;line-height:1.7;white-space:pre-wrap;word-break:break-word;">${(c.description || '—').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div></div>
         ${c.locationAddress ? `<div style="margin-bottom:10px;"><div style="font-size:10px;color:#9ca3af;">Location</div><div style="font-weight:600;">${c.locationAddress}</div></div>` : ''}
+        ${c.images.length ? `<div style="border-left:3px solid #D32F2F;padding-left:10px;margin-bottom:12px;"><div style="font-weight:700;font-size:11px;color:#6b7280;letter-spacing:.05em;">COMPLAINT PHOTOS</div></div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">${photoHtml}</div>` : ''}
         <div style="background:#f9fafb;padding:10px 16px;border-radius:6px;display:flex;justify-content:space-between;font-size:10px;color:#9ca3af;margin-top:20px;">
           <span>Tamilaga Vettri Kazhagam — Vikramasingapuram</span><span>${c.complaintId}</span>
         </div>

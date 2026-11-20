@@ -88,8 +88,8 @@ export default function AdminComplaints() {
     const priorityColors = { low:'#6b7280', medium:'#1d4ed8', high:'#c2410c', urgent:'#b91c1c' }
     const sc = statusColors[c.status] || '#6b7280'
     const pc = priorityColors[c.priority] || '#6b7280'
-    const photoHtml = (urls) => !urls?.length ? '' : urls.slice(0, 6).map(src =>
-      `<img src="${resolveUrl(src)}" crossorigin="anonymous" style="width:120px;height:90px;object-fit:cover;border-radius:6px;border:1px solid #e5e7eb;" />`
+    const photoHtml = (urls, isComplaintPhoto = false) => !urls?.length ? '' : urls.slice(0, 6).map(src =>
+      `<img src="${resolveUrl(src)}" crossorigin="anonymous" style="width:${isComplaintPhoto ? 320 : 120}px;height:${isComplaintPhoto ? 220 : 90}px;object-fit:cover;border-radius:6px;border:1px solid #e5e7eb;" />`
     ).join('')
     return `
       <div style="background:#D32F2F;padding:18px 24px;">
@@ -123,7 +123,7 @@ export default function AdminComplaints() {
           <div><div style="font-size:10px;color:#9ca3af;">Expected Completion</div><div style="font-weight:600;">${formatDate(c.expectedCompletionDate)}</div></div>
         </div>
         ${c.remarks ? `<div style="margin-bottom:20px;"><div style="font-size:10px;color:#9ca3af;">Officer Remarks</div><div style="background:#f9fafb;border-radius:6px;padding:10px;">${c.remarks}</div></div>` : ''}
-        ${c.images?.length ? `<div style="border-left:3px solid #D32F2F;padding-left:10px;margin-bottom:12px;"><div style="font-weight:700;font-size:11px;color:#6b7280;letter-spacing:.05em;">COMPLAINT PHOTOS</div></div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">${photoHtml(c.images)}</div>` : ''}
+        ${c.images?.length ? `<div style="border-left:3px solid #D32F2F;padding-left:10px;margin-bottom:12px;"><div style="font-weight:700;font-size:11px;color:#6b7280;letter-spacing:.05em;">COMPLAINT PHOTOS</div></div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">${photoHtml(c.images, true)}</div>` : ''}
         ${c.completionPhotos?.length ? `<div style="border-left:3px solid #D32F2F;padding-left:10px;margin-bottom:12px;"><div style="font-weight:700;font-size:11px;color:#6b7280;letter-spacing:.05em;">COMPLETION PHOTOS</div></div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">${photoHtml(c.completionPhotos)}</div>` : ''}
         <div style="background:#f9fafb;padding:10px 16px;border-radius:6px;display:flex;justify-content:space-between;font-size:10px;color:#9ca3af;margin-top:10px;">
           <span>Tamilaga Vettri Kazhagam — Vikramasingapuram</span><span>${c.complaintId}</span>
